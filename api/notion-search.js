@@ -1,4 +1,4 @@
-const { checkAuth, cors, ALLOWED_DB_IDS } = require('./_utils');
+const { checkAuth, cors } = require('./_utils');
 
 module.exports = async (req, res) => {
   cors(res);
@@ -6,9 +6,6 @@ module.exports = async (req, res) => {
   if (!checkAuth(req)) return res.status(401).json({ error: 'Unauthorized' });
 
   const { database_id } = req.body || {};
-  if (!ALLOWED_DB_IDS.has(database_id)) {
-    return res.status(400).json({ error: 'Unknown database' });
-  }
 
   const notionRes = await fetch(
     `https://api.notion.com/v1/databases/${database_id}/query`,

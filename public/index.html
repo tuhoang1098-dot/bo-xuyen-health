@@ -3305,8 +3305,80 @@ async function refreshAfterSave() {
   try { await loadData(); } catch (e) { console.warn('refresh failed', e); }
 }
 
-async function confirmMedChange() { console.warn('confirmMedChange stub'); return true; }
-async function detectDuplicateCGM() { console.warn('detectDuplicateCGM stub'); return 'new'; }
+async function confirmMedChange(records, summary) {
+  const medChanges = records.map(r => r['New Medications']).filter(Boolean).join('\n• ');
+  return new Promise(resolve => {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal';
+    backdrop.style.display = 'flex';
+    backdrop.innerHTML = `
+      <div class="modal-content" style="max-width:480px">
+        <h3>Xác nhận thay đổi thuốc</h3>
+        <p style="margin:12px 0;font-size:14px">Ghi chú khám bệnh có thay đổi thuốc. Vui lòng xác nhận trước khi lưu:</p>
+        <div style="background:var(--clay-tint,#FAEAE1);border-left:3px solid var(--clay,#B14A2E);padding:10px 14px;border-radius:8px;font-size:14px;margin-bottom:12px">
+          • ${escapeHtml(medChanges)}
+        </div>
+        ${summary ? `<p style="font-size:13px;color:var(--mute,#7B7062);margin-bottom:12px">${escapeHtml(summary)}</p>` : ''}
+        <div class="modal-actions">
+          <button class="btn-primary" data-act="save">Lưu</button>
+          <button class="btn-secondary" data-act="cancel">Bỏ qua</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+    backdrop.querySelectorAll('button').forEach(b => {
+      b.onclick = () => { document.body.removeChild(backdrop); resolve(b.dataset.act === 'save'); };
+    });
+  });
+}
+
+async function detectDuplicateCGM(records) {
+  const r = records[0];
+  if (!r || !r['Period Start'] || !r['Period End']) return 'new';
+  const dbId = notionDocDbIds.cgm;
+  if (!dbId) return 'new';
+
+  let existing = [];
+  try {
+    const search = await apiFetch('/api/notion-search', { database_id: dbId });
+    const pages = await Promise.all((search.results || []).map(p => apiFetch('/api/notion-fetch', { page_id: p.id })));
+    existing = pages.map(p => {
+      const m = (p.text || '').match(/<properties>\s*(\{[\s\S]*?\})\s*<\/properties>/);
+      if (!m) return null;
+      try { return JSON.parse(m[1]); } catch { return null; }
+    }).filter(Boolean);
+  } catch { return 'new'; }
+
+  const newStart = r['Period Start'], newEnd = r['Period End'];
+  const overlap = existing.filter(e => {
+    const es = e['date:Period Start:start'], ee = e['date:Period End:start'];
+    return es && ee && es <= newEnd && newStart <= ee;
+  });
+  if (overlap.length === 0) return 'new';
+  return await showDuplicateCgmPrompt(overlap, r);
+}
+
+function showDuplicateCgmPrompt(overlap, newRecord) {
+  return new Promise(resolve => {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal';
+    backdrop.style.display = 'flex';
+    backdrop.innerHTML = `
+      <div class="modal-content" style="max-width:420px">
+        <h3>Trùng khoảng thời gian CGM</h3>
+        <p style="margin:12px 0;font-size:14px">Đã có ${overlap.length} bản ghi CGM trùng khoảng <strong>${escapeHtml(newRecord['Period Start'])} – ${escapeHtml(newRecord['Period End'])}</strong>. Bạn muốn làm gì?</p>
+        <div class="modal-actions" style="flex-direction:column;gap:8px">
+          <button class="btn-secondary" data-act="skip">Bỏ qua (không lưu)</button>
+          <button class="btn-primary" data-act="new">Lưu thêm bản mới</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+    backdrop.querySelectorAll('button').forEach(b => {
+      b.onclick = () => { document.body.removeChild(backdrop); resolve(b.dataset.act); };
+    });
+  });
+}
 
 async function submitChat() {
   const input = document.getElementById('chatInput');

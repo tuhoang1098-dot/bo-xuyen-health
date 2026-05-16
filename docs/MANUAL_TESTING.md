@@ -20,3 +20,15 @@ Run on a Vercel preview deploy (push to a non-master branch) OR `npx vercel dev`
 - [ ] **Image ingest.** Attach a JPG/PNG of any health doc. Same flow.
 - [ ] **Non-medical doc.** Attach a recipe PDF or similar. Claude should explain in Vietnamese it cannot identify, and NOT create any Notion rows.
 - [ ] **First-upload cost toast.** First doc upload in a fresh browser shows the token cost toast once. Refresh and upload again — toast does NOT reappear (localStorage flag set).
+
+## Task 7: CGM dedup + med-change confirm
+
+- [ ] **First CGM upload — no modal.** Upload a CGM PDF for Jan 15–Feb 15. Saved directly, no prompt.
+- [ ] **Same period re-upload — modal shows.** Upload the same PDF. "Trùng khoảng thời gian CGM" modal appears.
+- [ ] **Skip duplicate.** Click "Bỏ qua". Chat: "Đã bỏ qua trùng lặp". No new Notion row.
+- [ ] **Save duplicate as new.** Re-upload, click "Lưu thêm bản mới". Second row added.
+- [ ] **Non-overlapping period — no modal.** Upload Mar 1–Mar 14 PDF. Saved directly.
+- [ ] **Doctor note WITHOUT med change — auto-saves.** Attach a notes PDF that doesn't mention any prescription/dose change. Saves directly.
+- [ ] **Doctor note WITH med change — modal shows.** Attach a note saying "Tăng liều Lantus lên 10U". "Xác nhận thay đổi thuốc" modal lists the changes.
+- [ ] **Confirm med change save.** Click "Lưu" — record saved.
+- [ ] **Cancel med change.** Click "Bỏ qua" — nothing saved; chat: "Đã bỏ qua (không lưu)".
