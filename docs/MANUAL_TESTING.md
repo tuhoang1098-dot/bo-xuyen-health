@@ -32,3 +32,18 @@ Run on a Vercel preview deploy (push to a non-master branch) OR `npx vercel dev`
 - [ ] **Doctor note WITH med change — modal shows.** Attach a note saying "Tăng liều Lantus lên 10U". "Xác nhận thay đổi thuốc" modal lists the changes.
 - [ ] **Confirm med change save.** Click "Lưu" — record saved.
 - [ ] **Cancel med change.** Click "Bỏ qua" — nothing saved; chat: "Đã bỏ qua (không lưu)".
+
+## Task 8: Deploy setup
+
+### One-time Notion setup
+1. Create (or pick) a Notion page to hold the 4 document DBs — e.g. "Bố Xuyên — Health Documents".
+2. Open the page → `•••` → **Connections** → add the existing "Bố Xuyên Health" integration.
+3. Copy the 32-character page ID from the URL (the hex string after the last `/` and before any `?`).
+
+### Vercel env var
+4. Vercel dashboard → project → **Settings → Environment Variables**.
+5. Add `NOTION_PARENT_PAGE_ID = <page-id>` for **Production**, **Preview**, and **Development**.
+
+### Deploy
+6. Push to `master` — Vercel auto-deploys to https://bo-xuyen-health.vercel.app.
+7. Log in → Chat tab → attach a lab PDF → confirm a "Blood Tests & Lab Results" DB appears under your parent page.
