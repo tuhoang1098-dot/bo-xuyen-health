@@ -1697,6 +1697,70 @@ body::before {
   border-top: 1px solid var(--line);
   flex-shrink: 0;
 }
+.chat-attach-btn {
+  background: none;
+  border: 1.5px solid var(--mute-2, #B5A990);
+  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mute, #7B7062);
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.chat-attach-btn:hover { background: var(--line-soft, #F3EDDF); }
+.chat-attach-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.chat-attach-btn svg { width: 18px; height: 18px; }
+
+.chat-attachment-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--jade-soft, #D6E6DC);
+  border: 1.5px solid var(--jade, #2E7D5B);
+  border-radius: 14px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--jade-deep, #1F5C42);
+  margin: 0 var(--page-pad, 18px) 8px;
+}
+.chat-attachment-preview .file-icon { font-size: 20px; }
+.chat-attachment-preview .file-meta { flex: 1; min-width: 0; }
+.chat-attachment-preview .file-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-attachment-preview .file-size { font-size: 11px; opacity: 0.8; }
+.chat-attachment-preview .remove-btn { background: none; border: none; color: var(--jade-deep, #1F5C42); font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+.chat-attachment-preview .remove-btn:hover { background: rgba(46,125,91,0.15); }
+
+.chat-progress-stage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface, #FFFFFF);
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--mute, #7B7062);
+  align-self: flex-start;
+  max-width: 80%;
+}
+.chat-progress-stage::before {
+  content: ''; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--jade, #2E7D5B); animation: pulse-dot 1.2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.chat-save-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--jade-soft, #D6E6DC); color: var(--jade-deep, #1F5C42);
+  border-radius: 8px; padding: 6px 10px; margin-bottom: 8px;
+  font-size: 12px; font-weight: 600;
+}
 .chat-textarea {
   flex: 1;
   resize: none;
@@ -1941,11 +2005,23 @@ body::before {
     Chế độ mô phỏng — thêm Anthropic API key vào Cài đặt để có AI thực.
   </div>
 
+  <div class="chat-attachment-preview" id="chatAttachmentPreview" style="display:none">
+    <span class="file-icon">📄</span>
+    <div class="file-meta">
+      <div class="file-name" id="attachFileName">—</div>
+      <div class="file-size" id="attachFileSize">—</div>
+    </div>
+    <button class="remove-btn" onclick="clearAttachment()" title="Bỏ tài liệu">✕</button>
+  </div>
   <div class="chat-input-area">
+    <input type="file" id="chatFileInput" accept="application/pdf,image/png,image/jpeg" style="display:none" onchange="handleFileAttach(event.target.files[0])">
+    <button class="chat-attach-btn" id="attachBtn" onclick="document.getElementById('chatFileInput').click()" title="Đính kèm tài liệu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+    </button>
     <textarea class="chat-textarea" id="chatInput" placeholder="Hỏi về sức khỏe của Bố Xuyên..." rows="1"
       onkeydown="handleChatKey(event)" oninput="autoResizeTextarea(this)"></textarea>
     <button class="chat-send-btn" id="sendBtn" onclick="submitChat()" title="Gửi">
-      <svg class="icon" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
     </button>
   </div>
 </div>
@@ -2026,6 +2102,7 @@ let analysisRendered = false;
 // Chat state
 let chatHistory = [];
 let isResponding = false;
+let pendingAttachment = null;
 let selectedModel = localStorage.getItem('health_model') || 'claude-sonnet-4-6';
 
 // Log form state
@@ -3165,6 +3242,56 @@ function showTyping() {
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
   return div;
+}
+
+const MAX_ATTACHMENT_BYTES = 32 * 1024 * 1024;
+const ACCEPTED_MIME = ['application/pdf', 'image/png', 'image/jpeg'];
+
+async function handleFileAttach(file) {
+  if (!file) return;
+  if (!ACCEPTED_MIME.includes(file.type)) {
+    showToast('Chỉ hỗ trợ PDF, PNG, hoặc JPG. (HEIC không hỗ trợ — vui lòng chuyển đổi.)', 'error');
+    document.getElementById('chatFileInput').value = '';
+    return;
+  }
+  if (file.size > MAX_ATTACHMENT_BYTES) {
+    showToast(`Tài liệu quá lớn (${(file.size/1024/1024).toFixed(1)}MB). Tối đa 32MB.`, 'error');
+    document.getElementById('chatFileInput').value = '';
+    return;
+  }
+  const base64 = await fileToBase64(file);
+  pendingAttachment = { name: file.name, mimeType: file.type, base64, sizeBytes: file.size };
+  renderAttachmentPreview();
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const s = String(reader.result);
+      const comma = s.indexOf(',');
+      resolve(comma >= 0 ? s.slice(comma + 1) : s);
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderAttachmentPreview() {
+  const wrap = document.getElementById('chatAttachmentPreview');
+  if (!pendingAttachment) { wrap.style.display = 'none'; return; }
+  document.getElementById('attachFileName').textContent = pendingAttachment.name;
+  const kb = pendingAttachment.sizeBytes / 1024;
+  const sizeStr = kb < 1024 ? `${kb.toFixed(0)} KB` : `${(kb/1024).toFixed(1)} MB`;
+  const typeStr = pendingAttachment.mimeType === 'application/pdf' ? 'PDF' : 'Hình ảnh';
+  document.getElementById('attachFileSize').textContent = `${sizeStr} · ${typeStr}`;
+  wrap.style.display = 'flex';
+}
+
+function clearAttachment() {
+  pendingAttachment = null;
+  document.getElementById('chatFileInput').value = '';
+  renderAttachmentPreview();
 }
 
 function handleChatKey(e) {
