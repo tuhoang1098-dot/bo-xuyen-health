@@ -48,5 +48,6 @@ test('rejects missing NOTION_PARENT_PAGE_ID', async () => {
   await handler({ method: 'POST', headers: { authorization: 'Bearer testpw' }, body: { type: 'cgm' } }, res);
   assert.equal(res.statusCode, 500);
   assert.match(res.body.error, /NOTION_PARENT_PAGE_ID/);
-  process.env.NOTION_PARENT_PAGE_ID = oldParent;
+  if (oldParent === undefined) delete process.env.NOTION_PARENT_PAGE_ID;
+  else process.env.NOTION_PARENT_PAGE_ID = oldParent;
 });
