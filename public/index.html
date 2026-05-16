@@ -3450,7 +3450,10 @@ async function submitChat() {
     saveConversation();
   } catch (err) {
     progressEl?.remove();
-    addMessage('assistant', `Xin lỗi, có lỗi: ${err.message}.`);
+    const msg = err.message?.includes('413')
+      ? 'Tài liệu quá lớn để gửi. Vui lòng chọn file nhỏ hơn 3MB hoặc chụp ảnh trang cần phân tích.'
+      : `Xin lỗi, có lỗi: ${err.message}.`;
+    addMessage('assistant', msg);
   }
   isResponding = false;
   document.getElementById('sendBtn').disabled = false;
@@ -3510,7 +3513,7 @@ function showTyping() {
   return div;
 }
 
-const MAX_ATTACHMENT_BYTES = 32 * 1024 * 1024;
+const MAX_ATTACHMENT_BYTES = 3 * 1024 * 1024;
 const ACCEPTED_MIME = ['application/pdf', 'image/png', 'image/jpeg'];
 
 async function handleFileAttach(file) {
@@ -3521,7 +3524,7 @@ async function handleFileAttach(file) {
     return;
   }
   if (file.size > MAX_ATTACHMENT_BYTES) {
-    showToast(`Tài liệu quá lớn (${(file.size/1024/1024).toFixed(1)}MB). Tối đa 32MB.`, 'error');
+    showToast(`Tài liệu quá lớn (${(file.size/1024/1024).toFixed(1)}MB). Tối đa 3MB.`, 'error');
     document.getElementById('chatFileInput').value = '';
     return;
   }
