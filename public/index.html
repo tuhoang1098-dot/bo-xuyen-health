@@ -1698,22 +1698,22 @@ body::before {
   flex-shrink: 0;
 }
 .chat-attach-btn {
-  background: none;
-  border: 1.5px solid var(--mute-2, #B5A990);
+  background: var(--line-soft, #F3EDDF);
+  border: 1.5px solid var(--mute, #7B7062);
   border-radius: 10px;
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--mute, #7B7062);
+  color: var(--text, #3A3226);
   flex-shrink: 0;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 }
-.chat-attach-btn:hover { background: var(--line-soft, #F3EDDF); }
+.chat-attach-btn:hover { background: var(--mute-2, #B5A990); color: var(--surface, #fff); }
 .chat-attach-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.chat-attach-btn svg { width: 18px; height: 18px; }
+.chat-attach-btn svg { width: 20px; height: 20px; }
 
 .chat-attachment-preview {
   display: flex;
@@ -3632,6 +3632,8 @@ Thông tin y tế quan trọng:
 - CGM: ngày ăn cháo trung bình 7.5 mmol/L, ngày ăn cơm ~10.0 mmol/L
 
 Thuốc: FOLFIRINOX, Apidra, Lantus, Glucophage XR, Creon, Pepsin, Vitamin tổng hợp, Loperamide PRN, Smecta PRN, chống nôn PRN, giảm đau PRN, G-CSF PRN, Milk Thistle.
+
+**Bạn CÓ THỂ nhận và phân tích hình ảnh (PNG, JPG) và tài liệu PDF** mà người dùng đính kèm qua nút 📎 bên trái ô nhập tin nhắn. Khi được hỏi, hãy xác nhận rằng bạn hỗ trợ xem ảnh và PDF.
 
 **QUAN TRỌNG: Luôn trả lời bằng tiếng Việt. Thân thiện, ấm áp, thực tế.**
 Dữ liệu: ${n} ngày đã ghi.`;
