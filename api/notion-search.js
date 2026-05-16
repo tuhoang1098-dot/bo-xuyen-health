@@ -19,12 +19,7 @@ module.exports = async (req, res) => {
         'Notion-Version': '2022-06-28',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        page_size: 25,
-        ...(database_id === 'ea677d7a-a61f-4455-bf71-82e7beec4095'
-          ? { sorts: [{ property: 'Date', direction: 'descending' }] }
-          : {}),
-      }),
+      body: JSON.stringify({ page_size: 25 }),
     }
   );
 
