@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
     return res.status(429).json({ error: 'Quá nhiều yêu cầu. Thử lại sau 1 giờ.' });
   }
 
-  const { model, messages, system, max_tokens } = req.body || {};
+  const { model, messages, system, max_tokens, tools } = req.body || {};
   if (!messages) return res.status(400).json({ error: 'Missing messages' });
 
   const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -41,6 +41,7 @@ module.exports = async (req, res) => {
       max_tokens: max_tokens || 1024,
       system,
       messages,
+      ...(tools ? { tools } : {}),
     }),
   });
 
