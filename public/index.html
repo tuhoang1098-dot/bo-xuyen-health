@@ -1,0 +1,3308 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Bố Xuyên – Sức khỏe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500;1,600;1,700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<script src="image-slot.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS — "Warm Vietnamese journal"
+   - Background: warm cream
+   - Ink: warm near-black (no pure black)
+   - Accents: jade (good), clay (alert), saffron (okay)
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  /* Surface */
+  --bg:        #F1EEE6;
+  --surface:   #FFFFFF;
+  --surface-2: #F7F4EC;
+  --line:      #ECE5D6;
+  --line-soft: #F3EDDF;
+
+  /* Ink */
+  --ink:       #14110D;
+  --ink-2:     #3A332A;
+  --mute:      #7B7062;
+  --mute-2:    #B5A990;
+
+  /* Accents */
+  --jade:        #2E7D5B;
+  --jade-deep:   #1F5C42;
+  --jade-soft:   #D6E6DC;
+  --jade-tint:   #E9F1EC;
+
+  --clay:        #B14A2E;
+  --clay-soft:   #F1D9CD;
+  --clay-tint:   #FAEAE1;
+
+  --saffron:     #B47A1C;
+  --saffron-soft:#F2E1BD;
+  --saffron-tint:#FAF1D9;
+
+  --lilac:       #6E5A8C;
+  --lilac-soft:  #E4DDEE;
+
+  /* Status (back-compat names) */
+  --good: var(--jade);
+  --okay: var(--saffron);
+  --tough: #C56A38;
+  --bad: var(--clay);
+  --blue: var(--jade);
+  --blue-light: var(--jade-soft);
+  --blue-bg: var(--bg);
+  --blue-shadow: rgba(20,17,13,0.05);
+  --text: var(--ink);
+  --text-sec: var(--mute);
+  --white: var(--surface);
+
+  /* Shape */
+  --radius:   22px;
+  --radius-sm:14px;
+  --radius-lg:28px;
+  --pill: 999px;
+
+  /* Type */
+  --font-sans: 'Be Vietnam Pro', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Be Vietnam Pro', Georgia, serif;
+
+  /* Layout */
+  --nav-h: 80px;
+  --page-pad: 18px;
+
+  /* Elevation — crisper card definition for v2 */
+  --shadow-1: 0 1px 0 rgba(20,17,13,0.04), 0 6px 16px -4px rgba(20,17,13,0.06);
+  --shadow-2: 0 2px 0 rgba(20,17,13,0.04), 0 12px 28px -6px rgba(20,17,13,0.10);
+  --shadow-nav: 0 -1px 0 rgba(20,17,13,0.06), 0 -8px 24px rgba(20,17,13,0.04);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  padding-bottom: calc(var(--nav-h) + 20px);
+  min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body::before {
+  /* subtle paper texture via tiny radial dots */
+  content: "";
+  position: fixed; inset: 0;
+  background-image: radial-gradient(rgba(30,25,19,0.025) 1px, transparent 1px);
+  background-size: 22px 22px;
+  pointer-events: none;
+  z-index: 0;
+}
+.tab-content, .bottom-nav, .toast, .modal-overlay { position: relative; z-index: 1; }
+.bottom-nav { z-index: 100; }
+
+/* ── Cards ── */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-1);
+}
+.card + .card { margin-top: 0; }
+.card-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.card-title svg { flex-shrink: 0; color: var(--ink-2); }
+
+.card-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+
+/* ── Bottom nav ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: rgba(255,253,248,0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-nav);
+  display: flex;
+  padding: 8px 6px calc(env(safe-area-inset-bottom, 0px) + 6px);
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 6px 2px;
+  min-height: 56px;
+  position: relative;
+  transition: color 0.2s;
+  color: var(--mute);
+}
+.nav-btn span {
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.005em;
+}
+.nav-btn .icon { width: 22px; height: 22px; stroke-width: 1.75; }
+.nav-btn.active { color: var(--jade-deep); }
+.nav-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  width: 56px; height: 36px;
+  background: var(--jade-tint);
+  border-radius: 12px;
+  z-index: -1;
+}
+
+/* ── Tabs ── */
+.tab-content { display: none; padding: 18px var(--page-pad) 0; }
+.tab-content.active { display: block; }
+
+/* ── Offline banner ── */
+.offline-banner {
+  background: var(--saffron-tint);
+  border: 1px solid var(--saffron-soft);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 0.92rem;
+  color: #6b4a0e;
+  margin: 16px var(--page-pad) 0;
+  display: none;
+  line-height: 1.5;
+}
+.offline-banner.show { display: block; }
+
+/* ── Loading ── */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+  color: var(--mute);
+}
+.spinner {
+  width: 28px; height: 28px;
+  border: 2.5px solid var(--line);
+  border-top-color: var(--jade);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── HOME TAB (v2) ─────────────────────────────────────
+   Hero header (big photo + greeting + bell) → vital grid → CTA → med schedule
+   ──────────────────────────────────────────────────── */
+.dad-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 4px 18px;
+  position: relative;
+}
+.dad-hero-bell-wrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 5;
+}
+.dad-photo-stack {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  margin: 4px 0 18px;
+  border-radius: 50%;
+  /* Soft warm backdrop — like a printed photo on cream paper */
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255,255,255,0.85), rgba(255,255,255,0) 58%),
+    linear-gradient(140deg, var(--jade-tint) 0%, var(--saffron-tint) 100%);
+  box-shadow:
+    0 0 0 7px var(--surface),
+    0 0 0 8px var(--line),
+    0 22px 48px -14px rgba(20,17,13,0.25);
+}
+.dad-photo-stack::before {
+  /* Subtle initials shown behind empty slot */
+  content: "Bố Xuyên";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: var(--jade-deep);
+  opacity: 0.45;
+  letter-spacing: 0.01em;
+  z-index: 0;
+}
+.dad-photo-slot {
+  position: absolute;
+  inset: 0;
+  width: 260px;
+  height: 260px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+  z-index: 1;
+}
+.dad-photo-slot.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.dad-greet-center {
+  text-align: center;
+  max-width: 28ch;
+}
+.dad-greet-eyebrow {
+  font-size: 0.92rem;
+  color: var(--mute);
+  font-weight: 500;
+  letter-spacing: 0.005em;
+}
+.dad-greet-name {
+  font-size: 2.3rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin-top: 4px;
+}
+.dad-greet-date {
+  font-size: 0.95rem;
+  color: var(--mute);
+  margin-top: 10px;
+  font-weight: 500;
+}
+.dad-photo-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+  min-height: 28px;
+}
+.dad-photo-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.dad-photo-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mute-2);
+  opacity: 0.45;
+  transition: all 0.3s ease;
+}
+.dad-photo-dot.filled { opacity: 0.85; }
+.dad-photo-dot.active {
+  width: 20px;
+  border-radius: 3px;
+  background: var(--jade);
+  opacity: 1;
+}
+.dad-photo-shuffle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink-2);
+  flex-shrink: 0;
+  padding: 0;
+  transition: transform 0.4s ease, background 0.2s;
+}
+.dad-photo-shuffle:hover { background: var(--surface-2); }
+.dad-photo-shuffle.spin { transform: rotate(180deg); }
+.dad-photo-shuffle svg { width: 13px; height: 13px; }
+.dad-photo-hint {
+  font-size: 0.78rem;
+  color: var(--mute);
+  font-weight: 500;
+  letter-spacing: 0.005em;
+}
+.app-header-bell {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink-2);
+  position: relative;
+  flex-shrink: 0;
+}
+.app-header-bell::after {
+  content: "";
+  position: absolute;
+  top: 10px; right: 11px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--clay);
+  border: 2px solid var(--surface);
+}
+.app-header-bell svg { width: 18px; height: 18px; }
+
+.section-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 18px 4px 12px;
+  letter-spacing: -0.005em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.section-title-more {
+  font-size: 0.82rem;
+  color: var(--mute);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Hero adherence card with donut */
+.adherence-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 22px 22px 20px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-1);
+  position: relative;
+  overflow: hidden;
+}
+.adherence-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.adherence-label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.adherence-label-icon {
+  width: 30px; height: 30px;
+  border-radius: 9px;
+  background: var(--jade-tint);
+  color: var(--jade-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.adherence-label-icon svg { width: 16px; height: 16px; }
+.adherence-chev {
+  width: 30px; height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mute);
+}
+.adherence-body {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.donut-wrap {
+  position: relative;
+  width: 120px; height: 120px;
+  flex-shrink: 0;
+}
+.donut-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.donut-track { fill: none; stroke: var(--line); stroke-width: 12; }
+.donut-fill {
+  fill: none;
+  stroke: var(--jade);
+  stroke-width: 12;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.6s ease;
+}
+.donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.donut-pct {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.03em;
+}
+.donut-pct-sub {
+  font-size: 0.72rem;
+  color: var(--mute);
+  font-weight: 600;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.adherence-detail { flex: 1; }
+.adherence-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 0.92rem;
+}
+.adherence-detail-row:last-child { border-bottom: none; }
+.adherence-detail-label { color: var(--mute); font-weight: 500; }
+.adherence-detail-val {
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+}
+
+.adherence-footer {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.adherence-footer-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--jade);
+  flex-shrink: 0;
+}
+
+/* Vital grid */
+.vital-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.vital-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 18px 18px 16px;
+  box-shadow: var(--shadow-1);
+  position: relative;
+  cursor: pointer;
+}
+.vital-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.vital-card-icon {
+  width: 28px; height: 28px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.vital-card-icon svg { width: 15px; height: 15px; }
+.vital-card-icon.weight  { background: var(--saffron-tint); color: var(--saffron); }
+.vital-card-icon.sugar   { background: var(--clay-tint); color: var(--clay); }
+.vital-card-icon.pain    { background: var(--lilac-soft); color: var(--lilac); }
+.vital-card-icon.cal     { background: var(--jade-tint); color: var(--jade-deep); }
+.vital-card-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--mute);
+}
+.vital-card-val {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.vital-card-unit {
+  font-size: 0.82rem;
+  color: var(--mute);
+  font-weight: 500;
+}
+.vital-card-trend {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--mute);
+}
+.vital-card-trend.up   { color: var(--jade); }
+.vital-card-trend.down { color: var(--clay); }
+.vital-card-spark {
+  position: absolute;
+  right: 14px; top: 14px;
+  width: 56px; height: 28px;
+  opacity: 0.85;
+}
+
+/* Primary CTA — Symptom Check-In style */
+.cta-card {
+  background: var(--ink);
+  color: var(--surface);
+  border: none;
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  width: 100%;
+  font-family: inherit;
+  font-size: 1.02rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  transition: all 0.2s;
+  letter-spacing: -0.005em;
+  box-shadow: 0 4px 16px rgba(20,17,13,0.18);
+}
+.cta-card.logged {
+  background: var(--jade);
+  box-shadow: 0 4px 16px rgba(46,125,91,0.25);
+}
+.cta-card:hover { transform: translateY(-1px); }
+.cta-card:active { transform: scale(0.99); }
+.cta-card-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.cta-card-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.cta-card-icon svg { width: 18px; height: 18px; }
+.cta-card-text { text-align: left; line-height: 1.2; }
+.cta-card-sub {
+  font-size: 0.82rem;
+  font-weight: 500;
+  opacity: 0.7;
+  margin-top: 3px;
+}
+.cta-card-chev {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.cta-card-chev svg { width: 14px; height: 14px; }
+
+/* Medication schedule — time-prefixed rows */
+.med-schedule-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 8px 0 4px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-1);
+}
+.med-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line-soft);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.med-row:last-child { border-bottom: none; }
+.med-row:hover { background: var(--surface-2); }
+.med-row-time {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  width: 76px;
+  flex-shrink: 0;
+  letter-spacing: -0.01em;
+}
+.med-row-time-sub {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--mute);
+  margin-top: 1px;
+}
+.med-row-pill {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--ink-2);
+}
+.med-row-pill.morning { background: var(--saffron-tint); color: var(--saffron); }
+.med-row-pill.lunch   { background: var(--jade-tint); color: var(--jade-deep); }
+.med-row-pill.dinner  { background: var(--clay-tint); color: var(--clay); }
+.med-row-pill.night   { background: var(--lilac-soft); color: var(--lilac); }
+.med-row-pill svg { width: 16px; height: 16px; }
+.med-row-info { flex: 1; min-width: 0; }
+.med-row-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.25;
+}
+.med-row-dose {
+  font-size: 0.85rem;
+  color: var(--mute);
+  margin-top: 2px;
+}
+.med-row-chev {
+  width: 22px; height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mute-2);
+  flex-shrink: 0;
+}
+.med-row-chev svg { width: 14px; height: 14px; }
+
+/* Chemo card (v2 — simpler) */
+.chemo-card-v2 {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-1);
+}
+.chemo-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.chemo-card-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.chemo-card-num {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+.chemo-card-of {
+  font-size: 0.92rem;
+  color: var(--mute);
+  font-weight: 500;
+}
+.greeting-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 6px;
+  position: relative;
+}
+.greeting-hello {
+  font-family: var(--font-sans);
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  margin-bottom: 4px;
+  position: relative;
+}
+.greeting-hello em { font-style: italic; color: var(--jade-deep); font-weight: 600; font-family: var(--font-sans); }
+.greeting-date {
+  font-size: 0.95rem;
+  color: var(--mute);
+  font-weight: 500;
+  position: relative;
+}
+.greeting-tagline {
+  margin-top: 18px;
+  font-size: 1.02rem;
+  color: var(--ink-2);
+  line-height: 1.55;
+  position: relative;
+  max-width: 30ch;
+}
+.dad-photo, .dad-photo-fallback {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--line);
+}
+.dad-photo-fallback {
+  background: linear-gradient(135deg, var(--jade-tint) 0%, var(--saffron-tint) 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  color: var(--jade-deep);
+  font-weight: 700;
+  font-family: var(--font-sans);
+}
+.greeting-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+}
+.greeting-text { flex: 1; min-width: 0; }
+.btn-log {
+  width: 100%;
+  margin-top: 20px;
+  padding: 16px;
+  border: none;
+  border-radius: 14px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 52px;
+  letter-spacing: 0.005em;
+  transition: background 0.2s, transform 0.1s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-log:active { transform: scale(0.99); }
+.btn-log:hover { background: #2a221a; }
+.btn-log.logged { background: var(--jade); }
+.btn-log.logged:hover { background: var(--jade-deep); }
+.btn-log .icon { width: 18px; height: 18px; }
+
+/* Status strip — today's vitals */
+.status-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.status-chip {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 14px 8px 12px;
+  text-align: center;
+  box-shadow: var(--shadow-1);
+}
+.status-chip-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.status-chip-val {
+  font-family: var(--font-sans);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+  margin-bottom: 4px;
+  letter-spacing: -0.025em;
+}
+.status-chip-label {
+  font-size: 0.74rem;
+  color: var(--mute);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Meds list */
+.med-group {
+  margin-bottom: 14px;
+}
+.med-group:last-child { margin-bottom: 0; }
+.med-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.med-time-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.med-time-icon {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.med-time-icon.morning  { background: var(--saffron-tint); color: var(--saffron); }
+.med-time-icon.lunch    { background: var(--jade-tint); color: var(--jade-deep); }
+.med-time-icon.dinner   { background: var(--clay-tint); color: var(--clay); }
+.med-time-icon.night    { background: var(--lilac-soft); color: var(--lilac); }
+.med-time-icon.meals    { background: var(--surface-2); color: var(--ink-2); }
+.med-time-icon.needed   { background: var(--surface-2); color: var(--mute); }
+.med-time-icon svg { width: 16px; height: 16px; }
+
+.med-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+.med-item + .med-item { border-top: 1px dashed var(--line-soft); }
+.med-info { flex: 1; min-width: 0; }
+.med-name {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.med-dose {
+  font-size: 0.88rem;
+  color: var(--mute);
+  margin-top: 2px;
+}
+.med-empty {
+  color: var(--mute);
+  font-size: 0.92rem;
+  font-style: italic;
+}
+
+/* Chemo journey */
+.chemo-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.chemo-round {
+  font-family: var(--font-sans);
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 0.95;
+  color: var(--ink);
+  letter-spacing: -0.03em;
+}
+.chemo-of {
+  font-size: 0.95rem;
+  color: var(--mute);
+  font-weight: 500;
+}
+.chemo-track {
+  height: 6px;
+  background: var(--line-soft);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 10px;
+}
+.chemo-track-fill {
+  height: 100%;
+  background: var(--jade);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+.chemo-dots {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 4px;
+  margin: 14px 0 10px;
+}
+.chemo-dot {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-family: var(--font-sans);
+}
+.chemo-dot.done    { background: var(--jade); color: var(--surface); }
+.chemo-dot.current { background: var(--ink); color: var(--surface); box-shadow: 0 0 0 3px var(--jade-tint); }
+.chemo-dot.pending { background: var(--line-soft); color: var(--mute); }
+.chemo-next {
+  font-size: 0.92rem;
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chemo-next-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--jade); }
+
+/* Compare card */
+.compare-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.compare-item {
+  padding: 14px 12px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+.compare-label {
+  font-size: 0.74rem;
+  color: var(--mute);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+.compare-val {
+  font-family: var(--font-sans);
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  letter-spacing: -0.025em;
+}
+.compare-val-unit { font-size: 0.82rem; color: var(--mute); font-family: var(--font-sans); font-weight: 500; }
+.compare-delta {
+  font-size: 0.84rem;
+  font-weight: 600;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.delta-up { color: var(--clay); }
+.delta-down { color: var(--jade); }
+.delta-same { color: var(--mute); }
+
+/* ── LOG TAB ── */
+.log-header {
+  margin-bottom: 18px;
+  padding: 6px 4px 0;
+}
+.log-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 6px;
+}
+.log-title {
+  font-family: var(--font-sans);
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--ink);
+  letter-spacing: -0.022em;
+}
+.log-date {
+  font-size: 0.95rem;
+  color: var(--mute);
+  margin-top: 6px;
+  font-weight: 500;
+}
+.already-logged-banner {
+  background: var(--jade-tint);
+  border: 1px solid var(--jade-soft);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 0.92rem;
+  color: var(--jade-deep);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.4;
+}
+.already-logged-banner svg { flex-shrink: 0; color: var(--jade-deep); }
+
+.log-section-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 0.74rem;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  margin-right: 8px;
+}
+.log-section-title {
+  font-family: var(--font-sans);
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+}
+.log-section-hint {
+  font-size: 0.88rem;
+  color: var(--mute);
+  margin-bottom: 14px;
+  margin-left: 30px;
+}
+
+/* Face selector — pain */
+.face-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.face-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 12px 4px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.18s;
+  min-height: 92px;
+  position: relative;
+}
+.face-btn .face-emoji { font-size: 1.8rem; line-height: 1; }
+.face-btn .face-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--mute);
+  text-align: center;
+  line-height: 1.15;
+}
+.face-btn:hover { border-color: var(--mute-2); }
+.face-btn.selected {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.face-btn.selected .face-label { color: var(--surface); }
+.face-btn.selected .face-emoji { transform: scale(1.05); }
+
+/* Symptom chips */
+.symptom-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.symptom-chip {
+  padding: 12px 18px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--pill);
+  background: var(--surface);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.18s;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.005em;
+}
+.symptom-chip::before {
+  content: "";
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  flex-shrink: 0;
+  transition: all 0.18s;
+}
+.symptom-chip:hover { border-color: var(--mute-2); }
+.symptom-chip.selected {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--surface);
+}
+.symptom-chip.selected::before {
+  border-color: var(--surface);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 3px var(--ink);
+}
+.symptom-chip.none-chip.selected {
+  border-color: var(--jade);
+  background: var(--jade);
+  color: var(--surface);
+}
+.symptom-chip.none-chip.selected::before {
+  box-shadow: inset 0 0 0 3px var(--jade);
+}
+
+/* Number inputs */
+.num-input-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  background: var(--surface-2);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: border-color 0.18s;
+}
+.num-input-row:focus-within {
+  border-color: var(--ink);
+  background: var(--surface);
+}
+.num-input {
+  flex: 1;
+  padding: 16px 16px;
+  border: none;
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: transparent;
+  letter-spacing: -0.02em;
+  min-width: 0;
+}
+.num-input:focus { outline: none; }
+.num-input::placeholder { color: var(--mute-2); font-weight: 500; }
+.num-unit {
+  font-size: 0.92rem;
+  color: var(--mute);
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border-left: 1.5px solid var(--line);
+}
+
+/* Day rating — three big cards */
+.day-rating-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.day-rating-btn {
+  padding: 16px 8px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 92px;
+  transition: all 0.18s;
+}
+.day-rating-btn .rating-glyph {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+.day-rating-btn:hover { border-color: var(--mute-2); }
+.day-rating-btn.selected { border-width: 2px; padding: 15px 7px 13px; }
+.day-rating-btn.selected-good { border-color: var(--jade); background: var(--jade-tint); color: var(--jade-deep); }
+.day-rating-btn.selected-okay { border-color: var(--saffron); background: var(--saffron-tint); color: #7a5410; }
+.day-rating-btn.selected-tough { border-color: var(--clay); background: var(--clay-tint); color: #7a3320; }
+
+/* Notes textarea */
+.notes-textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--surface-2);
+  resize: vertical;
+  min-height: 96px;
+  line-height: 1.55;
+  transition: all 0.18s;
+}
+.notes-textarea:focus { outline: none; border-color: var(--ink); background: var(--surface); }
+.notes-textarea::placeholder { color: var(--mute-2); }
+
+/* Sticky save button */
+.sticky-save {
+  position: sticky;
+  bottom: calc(var(--nav-h) + 12px);
+  background: var(--ink);
+  color: var(--surface);
+  border: none;
+  border-radius: 14px;
+  padding: 17px;
+  width: 100%;
+  font-size: 1.02rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 56px;
+  letter-spacing: 0.005em;
+  transition: all 0.2s;
+  z-index: 50;
+  margin-top: 14px;
+  box-shadow: 0 8px 24px rgba(30,25,19,0.18), 0 0 0 1px rgba(30,25,19,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.sticky-save:active { transform: scale(0.99); }
+.sticky-save:hover { background: #2a221a; }
+.sticky-save:disabled { background: var(--mute); box-shadow: none; cursor: not-allowed; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: calc(var(--nav-h) + 20px);
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--ink);
+  color: var(--surface);
+  padding: 14px 22px;
+  border-radius: var(--pill);
+  font-size: 0.95rem;
+  font-weight: 600;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 200;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 12px 32px rgba(30,25,19,0.2);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.success { background: var(--jade-deep); }
+.toast.error { background: var(--clay); }
+
+/* ── PROGRESS TAB ── */
+.streak-dots {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+}
+.streak-dot {
+  flex: 1;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--line-soft);
+}
+.streak-dot.good { background: var(--jade); }
+.streak-dot.okay { background: var(--saffron); }
+.streak-dot.tough { background: var(--tough); }
+.streak-dot.bad { background: var(--clay); }
+
+.big-stat {
+  font-family: var(--font-sans);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.big-stat-sub {
+  font-size: 0.95rem;
+  color: var(--mute);
+  margin-top: 6px;
+}
+
+.progress-bar-wrap { margin-bottom: 16px; }
+.progress-bar-wrap:last-child { margin-bottom: 0; }
+.progress-bar-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.92rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--ink-2);
+}
+.progress-bar-label .pb-val {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+}
+.progress-bar-bg {
+  height: 10px;
+  background: var(--line-soft);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.6s ease;
+  background: var(--jade);
+}
+.progress-bar-fill.good-fill { background: var(--jade); }
+.progress-bar-fill.okay-fill { background: var(--saffron); }
+
+.encourage-text {
+  font-size: 0.88rem;
+  color: var(--jade-deep);
+  font-weight: 500;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* Chart */
+.chart-container { position: relative; height: 220px; margin: 8px 0 4px; }
+
+/* ── ANALYSIS TAB ── */
+.insight-item {
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border-left: 3px solid var(--mute-2);
+}
+.insight-warn { background: var(--clay-tint); border-left-color: var(--clay); color: #5a2618; }
+.insight-info { background: var(--surface-2); border-left-color: var(--ink-2); }
+.insight-good { background: var(--jade-tint); border-left-color: var(--jade); color: var(--jade-deep); }
+
+.day-card {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow-1);
+}
+.day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.day-date {
+  font-weight: 600;
+  font-size: 0.98rem;
+  color: var(--ink);
+}
+.day-status-badge {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--pill);
+  letter-spacing: 0.03em;
+}
+.status-good { background: var(--jade-tint); color: var(--jade-deep); }
+.status-okay { background: var(--saffron-tint); color: #7a5410; }
+.status-tough { background: var(--clay-tint); color: #7a3320; }
+.status-bad { background: var(--clay-tint); color: var(--clay); }
+
+.day-grid {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 4px 12px;
+  font-size: 0.92rem;
+}
+.day-grid dt { color: var(--mute); font-weight: 500; }
+.day-grid dd { color: var(--ink-2); margin-bottom: 2px; }
+
+.symptom-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 10px;
+}
+.symptom-tag {
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: var(--pill);
+  background: var(--clay-tint);
+  color: #7a3320;
+}
+.symptom-tag.ok { background: var(--jade-tint); color: var(--jade-deep); }
+
+/* ── CHAT TAB ── */
+#tab-chat {
+  display: none;
+  flex-direction: column;
+  height: calc(100vh - var(--nav-h) - 20px);
+  min-height: 400px;
+  padding: 0;
+}
+#tab-chat.active { display: flex; }
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  margin: 18px var(--page-pad) 10px;
+  box-shadow: var(--shadow-1);
+}
+.chat-header-left { display: flex; align-items: center; gap: 12px; }
+.chat-header-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--jade-tint);
+  color: var(--jade-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chat-header-icon svg { width: 18px; height: 18px; }
+.chat-header-title {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.chat-header-sub {
+  font-size: 0.78rem;
+  color: var(--mute);
+  margin-top: 2px;
+}
+.chat-mode-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: var(--pill);
+  background: var(--saffron-tint);
+  color: #6b4a0e;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-left: 6px;
+}
+.chat-mode-badge.live { background: var(--jade-tint); color: var(--jade-deep); }
+.chat-settings-btn {
+  background: var(--surface-2);
+  border: none;
+  cursor: pointer;
+  color: var(--ink-2);
+  padding: 10px;
+  border-radius: 10px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  transition: background 0.18s;
+}
+.chat-settings-btn:hover { background: var(--line-soft); }
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px var(--page-pad) 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.chat-welcome {
+  text-align: center;
+  padding: 30px 18px 18px;
+  color: var(--mute);
+}
+.chat-welcome .welcome-icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--jade-tint);
+  color: var(--jade-deep);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.chat-welcome p {
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 28ch;
+  margin: 0 auto;
+}
+
+.chat-msg { display: flex; gap: 10px; max-width: 92%; }
+.chat-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+.chat-msg.assistant { align-self: flex-start; }
+.msg-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.user .msg-avatar { background: var(--ink); color: var(--surface); }
+.assistant .msg-avatar { background: var(--jade-tint); color: var(--jade-deep); font-family: var(--font-sans); font-size: 0.74rem; font-weight: 700; }
+.msg-bubble {
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  word-break: break-word;
+  color: var(--ink-2);
+}
+.user .msg-bubble {
+  background: var(--ink);
+  color: var(--surface);
+  border-bottom-right-radius: 6px;
+}
+.assistant .msg-bubble {
+  background: var(--surface);
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 6px;
+}
+.assistant .msg-bubble p { margin-bottom: 6px; }
+.assistant .msg-bubble p:last-child { margin-bottom: 0; }
+.assistant .msg-bubble strong { font-weight: 700; color: var(--ink); }
+.assistant .msg-bubble ul { margin: 6px 0 6px 18px; }
+.assistant .msg-bubble li { margin-bottom: 3px; }
+.msg-meta { font-size: 0.7rem; color: var(--mute-2); margin-top: 4px; padding: 0 4px; }
+.user .msg-meta { text-align: right; }
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  border-bottom-left-radius: 6px;
+  align-self: flex-start;
+  margin-left: 40px;
+}
+.typing-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--mute);
+  animation: typingBounce 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+.chat-suggestions {
+  padding: 8px var(--page-pad);
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.chat-suggestions::-webkit-scrollbar { height: 0; }
+.suggestion-chip {
+  flex-shrink: 0;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--pill);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: all 0.2s;
+  min-height: 40px;
+}
+.suggestion-chip:hover { background: var(--surface-2); border-color: var(--mute-2); }
+
+.mock-notice {
+  font-size: 0.82rem;
+  color: #6b4a0e;
+  text-align: center;
+  padding: 8px var(--page-pad);
+  background: var(--saffron-tint);
+  border-top: 1px solid var(--saffron-soft);
+  flex-shrink: 0;
+}
+
+.chat-input-area {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  padding: 12px var(--page-pad) 14px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.chat-textarea {
+  flex: 1;
+  resize: none;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 0.98rem;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--surface-2);
+  max-height: 120px;
+  min-height: 48px;
+  line-height: 1.4;
+  transition: all 0.2s;
+}
+.chat-textarea:focus { outline: none; border-color: var(--ink); background: var(--surface); }
+.chat-textarea::placeholder { color: var(--mute-2); }
+.chat-send-btn {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  border: none;
+  background: var(--ink);
+  color: var(--surface);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.chat-send-btn:hover { background: #2a221a; }
+.chat-send-btn:disabled { background: var(--mute-2); color: var(--surface); cursor: not-allowed; }
+.chat-send-btn svg { width: 18px; height: 18px; }
+
+/* ── SETTINGS MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30,25,19,0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 20px;
+}
+.modal-overlay.hidden { display: none; }
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 26px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 24px 64px rgba(30,25,19,0.2);
+}
+.modal-title {
+  font-family: var(--font-sans);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.modal-sub {
+  font-size: 0.92rem;
+  color: var(--mute);
+  margin-bottom: 22px;
+}
+.modal-field { margin-bottom: 16px; }
+.modal-field label {
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.modal-field input, .modal-field select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 0.98rem;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--surface-2);
+  transition: all 0.18s;
+}
+.modal-field input:focus, .modal-field select:focus {
+  outline: none;
+  border-color: var(--ink);
+  background: var(--surface);
+}
+.modal-field .hint {
+  font-size: 0.82rem;
+  color: var(--mute);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 22px;
+}
+.btn-primary {
+  flex: 1;
+  padding: 13px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 48px;
+  transition: background 0.2s;
+}
+.btn-primary:hover { background: #2a221a; }
+.btn-secondary {
+  padding: 13px 18px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 48px;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { background: var(--surface-2); }
+.btn-danger {
+  padding: 13px 18px;
+  border: 1.5px solid var(--clay-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--clay);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 48px;
+  transition: all 0.2s;
+}
+.btn-danger:hover { background: var(--clay-tint); }
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  margin-bottom: 18px;
+  font-size: 0.9rem;
+  color: var(--ink-2);
+}
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-dot.mock { background: var(--saffron); box-shadow: 0 0 0 3px var(--saffron-tint); }
+.status-dot.live { background: var(--jade); box-shadow: 0 0 0 3px var(--jade-tint); }
+
+/* Inline SVG icons (Lucide) */
+.icon { display: inline-block; width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.icon-sm { width: 16px; height: 16px; }
+.icon-lg { width: 24px; height: 24px; }
+</style>
+</head>
+<body>
+
+<!-- Login screen -->
+<div id="loginScreen" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:var(--surface);border-radius:var(--radius-lg);padding:36px 28px;width:100%;max-width:360px;box-shadow:var(--shadow-2);text-align:center;">
+    <div style="font-size:2.2rem;margin-bottom:12px;">💙</div>
+    <h1 style="font-size:1.35rem;font-weight:700;margin-bottom:4px;">Sức khỏe Bố Xuyên</h1>
+    <p style="color:var(--mute);font-size:0.9rem;margin-bottom:24px;">Nhập mật khẩu để tiếp tục</p>
+    <input type="password" id="loginPwd" placeholder="Mật khẩu"
+      style="width:100%;padding:14px 16px;border-radius:var(--radius-sm);border:1.5px solid var(--line);background:var(--surface-2);font-size:1rem;font-family:var(--font-sans);margin-bottom:12px;outline:none;"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button id="loginBtn" onclick="doLogin()"
+      style="width:100%;padding:14px;border-radius:var(--radius-sm);border:none;background:var(--jade);color:#fff;font-size:1rem;font-weight:600;font-family:var(--font-sans);cursor:pointer;min-height:48px;">
+      Đăng nhập
+    </button>
+    <p id="loginError" style="color:var(--clay);font-size:0.875rem;margin-top:10px;min-height:20px;"></p>
+  </div>
+</div>
+
+<!-- 5 Tab contents -->
+<div id="tab-home" class="tab-content active">
+  <div id="homeContent"><div class="loading-screen"><div class="spinner"></div><span>Đang tải dữ liệu...</span></div></div>
+</div>
+
+<div id="tab-log" class="tab-content">
+  <div id="logContent"></div>
+</div>
+
+<div id="tab-progress" class="tab-content">
+  <div id="progressContent"><div class="loading-screen"><div class="spinner"></div><span>Đang tải...</span></div></div>
+</div>
+
+<div id="tab-analysis" class="tab-content">
+  <div id="analysisContent"><div class="loading-screen"><div class="spinner"></div><span>Đang tải...</span></div></div>
+</div>
+
+<div id="tab-chat" class="tab-content">
+  <div class="chat-header">
+    <div class="chat-header-left">
+      <div class="chat-header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div>
+        <div class="chat-header-title">Trợ lý sức khỏe<span class="chat-mode-badge" id="modeBadge">Mock</span></div>
+        <div class="chat-header-sub">Hỏi về dinh dưỡng, triệu chứng, xu hướng</div>
+      </div>
+    </div>
+    <button class="chat-settings-btn" onclick="openSettings()" title="Cài đặt">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-welcome" id="chatWelcome">
+      <div class="welcome-icon">AI</div>
+      <p>Xin chào! Tôi có thể giúp phân tích sức khỏe, chế độ ăn, và xu hướng của Bố Xuyên.<br><br>Hãy hỏi tôi, hoặc chọn câu hỏi gợi ý phía dưới.</p>
+    </div>
+  </div>
+
+  <div class="chat-suggestions" id="chatSuggestions">
+    <button class="suggestion-chip" onclick="sendPrompt('Phân tích các mẫu hình sức khỏe gần đây của Bố Xuyên. Có ngày nào hoặc thức ăn nào nổi bật không?')">Phân tích xu hướng</button>
+    <button class="suggestion-chip" onclick="sendPrompt('Gợi ý cải thiện chế độ ăn để giảm dumping và tăng calo cho Bố Xuyên')">Gợi ý chế độ ăn</button>
+    <button class="suggestion-chip" onclick="sendPrompt('Mức độ đau của Bố Xuyên đang thế nào? Ngày nào tệ nhất và có thể do nguyên nhân gì?')">Phân tích đau</button>
+    <button class="suggestion-chip" onclick="sendPrompt('Tóm tắt tình trạng sức khỏe tuần này và những điều cần báo cáo cho bác sĩ Hạnh')">Tóm tắt tuần</button>
+    <button class="suggestion-chip" onclick="sendPrompt('Những ngày nào Bố Xuyên ăn tốt nhất? Hôm đó ăn gì?')">Ngày dinh dưỡng tốt</button>
+  </div>
+
+  <div class="mock-notice" id="mockNotice">
+    Chế độ mô phỏng — thêm Anthropic API key vào Cài đặt để có AI thực.
+  </div>
+
+  <div class="chat-input-area">
+    <textarea class="chat-textarea" id="chatInput" placeholder="Hỏi về sức khỏe của Bố Xuyên..." rows="1"
+      onkeydown="handleChatKey(event)" oninput="autoResizeTextarea(this)"></textarea>
+    <button class="chat-send-btn" id="sendBtn" onclick="submitChat()" title="Gửi">
+      <svg class="icon" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- Bottom nav -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-tab="home" onclick="switchTab('home')">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Trang chủ</span>
+  </button>
+  <button class="nav-btn" data-tab="log" onclick="switchTab('log')">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    <span>Nhật ký</span>
+  </button>
+  <button class="nav-btn" data-tab="progress" onclick="switchTab('progress')">
+    <svg class="icon" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+    <span>Tiến triển</span>
+  </button>
+  <button class="nav-btn" data-tab="analysis" onclick="switchTab('analysis')">
+    <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    <span>Phân tích</span>
+  </button>
+  <button class="nav-btn" data-tab="chat" onclick="switchTab('chat')">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span>Trợ lý</span>
+  </button>
+</nav>
+
+<!-- Settings modal -->
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal">
+    <div class="modal-title">Cài đặt trợ lý AI</div>
+    <div class="modal-sub">Cấu hình kết nối Anthropic API</div>
+    <div class="status-row">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText"></span>
+    </div>
+    <div class="modal-field">
+      <label>Model</label>
+      <select id="modelSelect">
+        <option value="claude-sonnet-4-6">Claude Sonnet 4.6 (Khuyên dùng)</option>
+        <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (Nhanh hơn)</option>
+        <option value="claude-opus-4-6">Claude Opus 4.6 (Mạnh nhất)</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveSettings()">Lưu</button>
+      <button class="btn-danger" onclick="clearConversation()">Xoá chat</button>
+      <button class="btn-secondary" onclick="closeSettings()">Huỷ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════
+const DS_ID = '13c0deff-9077-4fa9-bb05-3728f8f4c871';
+const MEDS_DS_ID = '63ff99c4-fa38-4263-a5e0-a7a0051af68d';
+const DB_URL = 'collection://' + DS_ID;
+const MEDS_DB_URL = 'collection://' + MEDS_DS_ID;
+
+// Chemo config: 12 rounds total, biweekly; set current round manually or derive from data
+const CHEMO_TOTAL = 12;
+const CHEMO_START_DATE = '2025-01-01'; // approximate — adjust when known
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let entries = [];
+let meds = [];
+let chartsRendered = false;
+let analysisRendered = false;
+
+// Chat state
+let chatHistory = [];
+let isResponding = false;
+let selectedModel = localStorage.getItem('health_model') || 'claude-sonnet-4-6';
+
+// Log form state
+let logState = {
+  pain: null,
+  symptoms: new Set(),
+  bloodSugar: '',
+  weight: '',
+  rating: null,
+  notes: ''
+};
+
+// ═══════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════
+function painToNum(p) {
+  if (!p) return null;
+  const map = { '0 - None': 0, '1-2 Mild': 1.5, '3-4 Moderate': 3.5, '5-6 Significant': 5.5, '7-8 Severe': 7.5, '9-10 Extreme': 9.5 };
+  return map[p] ?? null;
+}
+function painColor(n) {
+  if (n == null) return '#B8AC95';
+  if (n <= 2) return '#3F7858';
+  if (n <= 4) return '#B47A1C';
+  if (n <= 6) return '#C56A38';
+  return '#B14A2E';
+}
+function statusClass(s) {
+  const m = { 'Good day': 'status-good', 'Okay': 'status-okay', 'Tough day': 'status-tough', 'Bad day': 'status-bad' };
+  return m[s] || '';
+}
+function bool(v) { return v === '__YES__' || v === true; }
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('vi-VN', { weekday: 'short', month: 'numeric', day: 'numeric' });
+}
+function vnDate(d) {
+  if (!d) return '';
+  const dt = d instanceof Date ? d : new Date(d + 'T00:00:00');
+  const days = ['Chủ nhật','Thứ hai','Thứ ba','Thứ tư','Thứ năm','Thứ sáu','Thứ bảy'];
+  return `${days[dt.getDay()]}, ${dt.getDate()} tháng ${dt.getMonth()+1}`;
+}
+function vnGreeting() {
+  const h = new Date().getHours();
+  if (h < 11) return 'Chào buổi sáng';
+  if (h < 14) return 'Chào buổi trưa';
+  if (h < 18) return 'Chào buổi chiều';
+  return 'Chào buổi tối';
+}
+function calcAvg(arr, field) {
+  const vals = arr.map(e => e[field]).filter(v => v != null && v !== '');
+  if (!vals.length) return 0;
+  return vals.reduce((s, v) => s + Number(v), 0) / vals.length;
+}
+function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+function getTodayEntry() {
+  const today = todayISO();
+  return entries.find(e => e['date:Date:start'] === today) || null;
+}
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+// ═══════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => {
+    el.classList.remove('active');
+    if (el.id === 'tab-chat') el.style.display = 'none';
+  });
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+  const content = document.getElementById('tab-' + tab);
+  content.classList.add('active');
+  if (tab === 'chat') content.style.display = 'flex';
+
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+  if (tab === 'analysis' && !analysisRendered) renderAnalysis();
+  if (tab === 'progress') renderProgress();
+  if (tab === 'log') renderLog();
+}
+
+// ═══════════════════════════════════════════════════════════
+// DATA LOADING
+// ═══════════════════════════════════════════════════════════
+async function apiFetch(url, body) {
+  const pw = sessionStorage.getItem('app_password');
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${pw}` },
+    body: JSON.stringify(body)
+  });
+  if (res.status === 401) { logout(); throw new Error('Session expired'); }
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || `API error ${res.status}`);
+  }
+  return res.json();
+}
+
+async function doLogin() {
+  const pwd = document.getElementById('loginPwd').value.trim();
+  if (!pwd) return;
+  const btn = document.getElementById('loginBtn');
+  const errEl = document.getElementById('loginError');
+  btn.disabled = true;
+  btn.textContent = 'Đang kiểm tra...';
+  errEl.textContent = '';
+  try {
+    const res = await fetch('/api/notion-search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${pwd}` },
+      body: JSON.stringify({ database_id: DS_ID })
+    });
+    if (res.status === 401) {
+      errEl.textContent = 'Mật khẩu không đúng. Vui lòng thử lại.';
+      btn.disabled = false; btn.textContent = 'Đăng nhập'; return;
+    }
+    if (!res.ok) throw new Error(`Lỗi ${res.status}`);
+    sessionStorage.setItem('app_password', pwd);
+    document.getElementById('loginScreen').style.display = 'none';
+    loadData();
+  } catch(e) {
+    errEl.textContent = 'Lỗi kết nối: ' + e.message;
+    btn.disabled = false; btn.textContent = 'Đăng nhập';
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('app_password');
+  location.reload();
+}
+
+async function loadData() {
+  try {
+    const [searchResult, medsResult] = await Promise.all([
+      apiFetch('/api/notion-search', { database_id: DS_ID }),
+      apiFetch('/api/notion-search', { database_id: MEDS_DS_ID })
+    ]);
+
+    const pages = searchResult?.results || [];
+    const medPages = medsResult?.results || [];
+
+    const [fetchedEntries, fetchedMeds] = await Promise.all([
+      Promise.all(pages.map(p => apiFetch('/api/notion-fetch', { page_id: p.id }))),
+      Promise.all(medPages.map(p => apiFetch('/api/notion-fetch', { page_id: p.id })))
+    ]);
+
+    entries = fetchedEntries.map(parseProps).filter(Boolean);
+    entries.sort((a, b) => (b['date:Date:start'] || '').localeCompare(a['date:Date:start'] || ''));
+    meds = fetchedMeds.map(parseProps).filter(Boolean).filter(m => bool(m['Active']));
+
+    render();
+  } catch(err) {
+    if (err.message === 'Session expired') return;
+    document.getElementById('homeContent').innerHTML =
+      `<div class="card"><p style="color:var(--bad)">Lỗi tải dữ liệu: ${err.message}</p></div>`;
+  }
+}
+
+function parseProps(r) {
+  const text = r?.text || '';
+  const m = text.match(/<properties>\s*(\{[\s\S]*?\})\s*<\/properties>/);
+  if (!m) return null;
+  try { return JSON.parse(m[1]); } catch(e) { return null; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER DISPATCHER
+// ═══════════════════════════════════════════════════════════
+function render() {
+  renderHome();
+  renderLog();
+  updateModeUI();
+  loadConversation();
+}
+
+// ═══════════════════════════════════════════════════════════
+// HOME TAB (v2 — clean cards, donut, vital grid)
+// ═══════════════════════════════════════════════════════════
+function renderHome() {
+  const today = getTodayEntry();
+  const greeting = vnGreeting();
+  const dateStr = vnDate(new Date());
+  const alreadyLogged = !!today;
+
+  // ── Adherence calculation (last 14 days; "good day" = took meds & no severe symptoms)
+  const window14 = entries.slice(0, 14);
+  const adherenceDays = window14.filter(e => e['Overall Status'] === 'Good day' || e['Overall Status'] === 'Okay').length;
+  const adherencePct = window14.length > 0 ? Math.round((adherenceDays / window14.length) * 100) : 0;
+  const adherenceCircum = 2 * Math.PI * 52; // r=52
+  const adherenceDash = (adherencePct / 100) * adherenceCircum;
+
+  // ── Latest vitals
+  const latestWeight = entries.find(e => e['Weight (kg)'])?.['Weight (kg)'];
+  const prevWeightEntry = entries.filter(e => e['Weight (kg)'])[1];
+  const weightDelta = (latestWeight && prevWeightEntry) ? (latestWeight - prevWeightEntry['Weight (kg)']).toFixed(1) : null;
+
+  const latestBS = entries.find(e => e['Blood Sugar (Morning)'])?.['Blood Sugar (Morning)'];
+  const latestPain = today ? painToNum(today['Pain Level']) : painToNum(entries[0]?.['Pain Level']);
+  const recent7 = entries.slice(0, 7);
+  const avgCal = Math.round(calcAvg(recent7, 'Calories Est.'));
+
+  // ── Chemo
+  const chemoRound = Math.min(Math.max(1, Math.ceil(entries.length / 7)), CHEMO_TOTAL);
+  const chemoPct = Math.round((chemoRound / CHEMO_TOTAL) * 100);
+  const chemoDots = Array.from({length: CHEMO_TOTAL}, (_, i) => {
+    const cls = i < chemoRound - 1 ? 'done' : i === chemoRound - 1 ? 'current' : 'pending';
+    return `<div class="chemo-dot ${cls}">${i+1}</div>`;
+  }).join('');
+
+  // ── Meds — time-prefixed rows, sorted by clock time
+  const timeMeta = {
+    'Morning':       { clock: '7:00',  ampm: 'sáng',  bucket: 'morning', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>' },
+    'Before lunch':  { clock: '11:30', ampm: 'trưa',  bucket: 'lunch',   icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18M5 11V8a7 7 0 0114 0v3M3 11v2a4 4 0 004 4h10a4 4 0 004-4v-2M9 21h6"/></svg>' },
+    'Before dinner': { clock: '18:00', ampm: 'tối',   bucket: 'dinner',  icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h0a2 2 0 002-2V2M5 11v11M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>' },
+    '9 PM':          { clock: '21:00', ampm: 'tối',   bucket: 'night',   icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>' },
+    'With meals':    { clock: 'Bữa ăn', ampm: '',     bucket: 'lunch',   icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/></svg>' },
+    'As needed':     { clock: 'Khi cần', ampm: '',    bucket: 'night',   icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>' },
+  };
+  const timeOrder = ['Morning','Before lunch','With meals','Before dinner','9 PM','As needed'];
+  const sortedMeds = [...meds].sort((a, b) =>
+    timeOrder.indexOf(a['Time']) - timeOrder.indexOf(b['Time'])
+  );
+  const medsRowsHtml = sortedMeds.length ? sortedMeds.map(m => {
+    const meta = timeMeta[m['Time']] || timeMeta['As needed'];
+    return `
+      <div class="med-row">
+        <div class="med-row-time">
+          ${meta.clock}
+          ${meta.ampm ? `<div class="med-row-time-sub">${meta.ampm}</div>` : ''}
+        </div>
+        <div class="med-row-pill ${meta.bucket}">${meta.icon}</div>
+        <div class="med-row-info">
+          <div class="med-row-name">${m['Vietnamese Name'] || m['Name'] || '—'}</div>
+          ${m['Dose'] ? `<div class="med-row-dose">${m['Dose']}</div>` : ''}
+        </div>
+        <div class="med-row-chev">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>`;
+  }).join('') : '<div style="padding:20px;color:var(--mute);text-align:center;font-size:0.92rem">Chưa tải được lịch thuốc.</div>';
+
+  // ── Sparkline for weight card
+  const weightSeries = entries.filter(e => e['Weight (kg)']).slice(0, 10).reverse().map(e => e['Weight (kg)']);
+  const weightSpark = sparkline(weightSeries, 56, 28, 'var(--saffron)');
+
+  // ── CTA
+  const ctaIcon = alreadyLogged
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6M5.6 5.6l4.2 4.2M14.2 14.2l4.2 4.2M5.6 18.4l4.2-4.2M14.2 9.8l4.2-4.2"/></svg>';
+  const ctaTitle = alreadyLogged ? 'Đã ghi nhật ký hôm nay' : 'Ghi nhật ký triệu chứng';
+  const ctaSub = alreadyLogged ? 'Xem lại hoặc cập nhật' : 'Một vài câu hỏi nhanh — mất khoảng 1 phút';
+
+  // Adherence detail rows
+  const goodCount = window14.filter(e => e['Overall Status'] === 'Good day').length;
+  const okayCount = window14.filter(e => e['Overall Status'] === 'Okay').length;
+  const toughCount = window14.filter(e => e['Overall Status'] === 'Tough day').length;
+
+  document.getElementById('homeContent').innerHTML = `
+    <div class="dad-hero">
+      <div class="dad-hero-bell-wrap">
+        <div class="app-header-bell">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </div>
+      </div>
+      <div class="dad-photo-stack" id="dadPhotoStack">
+        <image-slot id="dad-photo-1" class="dad-photo-slot active" shape="circle" placeholder="Thả ảnh bố"></image-slot>
+        <image-slot id="dad-photo-2" class="dad-photo-slot" shape="circle" placeholder="Thả ảnh bố"></image-slot>
+        <image-slot id="dad-photo-3" class="dad-photo-slot" shape="circle" placeholder="Thả ảnh bố"></image-slot>
+        <image-slot id="dad-photo-4" class="dad-photo-slot" shape="circle" placeholder="Thả ảnh bố"></image-slot>
+        <image-slot id="dad-photo-5" class="dad-photo-slot" shape="circle" placeholder="Thả ảnh bố"></image-slot>
+      </div>
+      <div class="dad-greet-center">
+        <div class="dad-greet-eyebrow">${greeting},</div>
+        <div class="dad-greet-name">Bố Xuyên</div>
+        <div class="dad-greet-date">${dateStr}</div>
+      </div>
+      <div class="dad-photo-controls" id="dadPhotoControls">
+        <div class="dad-photo-dots" id="dadPhotoDots">
+          <span class="dad-photo-dot active"></span>
+          <span class="dad-photo-dot"></span>
+          <span class="dad-photo-dot"></span>
+          <span class="dad-photo-dot"></span>
+          <span class="dad-photo-dot"></span>
+        </div>
+        <button class="dad-photo-shuffle" onclick="shuffleDadPhoto(true)" title="Đổi ảnh" aria-label="Đổi ảnh">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="section-title">Tổng quan hôm nay</div>
+
+    <div class="adherence-card">
+      <div class="adherence-head">
+        <div class="adherence-label">
+          <div class="adherence-label-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          Tuân thủ điều trị
+        </div>
+        <div class="adherence-chev">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+      <div class="adherence-body">
+        <div class="donut-wrap">
+          <svg class="donut-svg" viewBox="0 0 120 120">
+            <circle class="donut-track" cx="60" cy="60" r="52"/>
+            <circle class="donut-fill" cx="60" cy="60" r="52"
+              stroke-dasharray="${adherenceDash} ${adherenceCircum}"/>
+          </svg>
+          <div class="donut-center">
+            <div class="donut-pct">${adherencePct}%</div>
+            <div class="donut-pct-sub">14 ngày</div>
+          </div>
+        </div>
+        <div class="adherence-detail">
+          <div class="adherence-detail-row">
+            <span class="adherence-detail-label">Ngày tốt</span>
+            <span class="adherence-detail-val" style="color:var(--jade-deep)">${goodCount}</span>
+          </div>
+          <div class="adherence-detail-row">
+            <span class="adherence-detail-label">Bình thường</span>
+            <span class="adherence-detail-val" style="color:var(--saffron)">${okayCount}</span>
+          </div>
+          <div class="adherence-detail-row">
+            <span class="adherence-detail-label">Khó khăn</span>
+            <span class="adherence-detail-val" style="color:var(--clay)">${toughCount}</span>
+          </div>
+        </div>
+      </div>
+      <div class="adherence-footer">
+        <span class="adherence-footer-dot"></span>
+        ${adherencePct >= 75 ? 'Đang ổn định — bố giữ nhịp này nhé.' : 'Cần theo dõi sát hơn — báo bác sĩ Hạnh nếu nặng.'}
+      </div>
+    </div>
+
+    <div class="vital-grid">
+      <div class="vital-card" onclick="switchTab('progress')">
+        <div class="vital-card-head">
+          <div class="vital-card-icon weight">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8l-4 8-2-4-4-1"/></svg>
+          </div>
+          <div class="vital-card-label">Cân nặng</div>
+        </div>
+        <div class="vital-card-val">${latestWeight || '—'}<span class="vital-card-unit">kg</span></div>
+        ${weightDelta !== null ? `<div class="vital-card-trend ${weightDelta >= 0 ? 'up' : 'down'}">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="${weightDelta >= 0 ? '6 15 12 9 18 15' : '6 9 12 15 18 9'}"/></svg>
+          ${Math.abs(weightDelta)} kg so với lần trước
+        </div>` : '<div class="vital-card-trend">Chưa có so sánh</div>'}
+      </div>
+      <div class="vital-card" onclick="switchTab('progress')">
+        <div class="vital-card-head">
+          <div class="vital-card-icon sugar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 6 6 9 6 13a6 6 0 0012 0c0-4-2-7-6-11z"/></svg>
+          </div>
+          <div class="vital-card-label">Đường huyết</div>
+        </div>
+        <div class="vital-card-val">${latestBS || '—'}<span class="vital-card-unit">mmol/L</span></div>
+        <div class="vital-card-trend ${latestBS != null && latestBS <= 8 ? 'up' : 'down'}">
+          ${latestBS == null ? 'Chưa đo sáng nay' : latestBS <= 8 ? 'Trong ngưỡng tốt' : 'Hơi cao, theo dõi'}
+        </div>
+      </div>
+      <div class="vital-card" onclick="switchTab('log')">
+        <div class="vital-card-head">
+          <div class="vital-card-icon pain">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          </div>
+          <div class="vital-card-label">Mức đau</div>
+        </div>
+        <div class="vital-card-val">${latestPain != null ? latestPain : '—'}<span class="vital-card-unit">/ 10</span></div>
+        <div class="vital-card-trend ${latestPain != null && latestPain <= 3 ? 'up' : 'down'}">
+          ${latestPain == null ? 'Chưa ghi hôm nay' : latestPain <= 3 ? 'Nhẹ — ổn' : latestPain <= 6 ? 'Vừa — theo dõi' : 'Cao — báo bác sĩ'}
+        </div>
+      </div>
+      <div class="vital-card" onclick="switchTab('progress')">
+        <div class="vital-card-head">
+          <div class="vital-card-icon cal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/></svg>
+          </div>
+          <div class="vital-card-label">Calo / ngày</div>
+        </div>
+        <div class="vital-card-val">${avgCal || '—'}<span class="vital-card-unit">kcal</span></div>
+        <div class="vital-card-trend ${avgCal >= 1300 ? 'up' : 'down'}">
+          Mục tiêu 1500 — TB 7 ngày
+        </div>
+      </div>
+    </div>
+
+    <button class="cta-card ${alreadyLogged ? 'logged' : ''}" onclick="switchTab('log')">
+      <div class="cta-card-left">
+        <div class="cta-card-icon">${ctaIcon}</div>
+        <div class="cta-card-text">
+          ${ctaTitle}
+          <div class="cta-card-sub">${ctaSub}</div>
+        </div>
+      </div>
+      <div class="cta-card-chev">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </button>
+
+    <div class="section-title">Lịch thuốc hôm nay <span class="section-title-more">${sortedMeds.length} mục</span></div>
+    <div class="med-schedule-card">
+      ${medsRowsHtml}
+    </div>
+
+    <div class="section-title">Hành trình điều trị</div>
+    <div class="chemo-card-v2">
+      <div class="chemo-card-head">
+        <div>
+          <div class="chemo-card-stat">
+            <span class="chemo-card-num">${chemoRound}</span>
+            <span class="chemo-card-of">/ ${CHEMO_TOTAL} đợt</span>
+          </div>
+          <div style="font-size:0.82rem;color:var(--mute);margin-top:6px">FOLFIRINOX · mỗi 2 tuần</div>
+        </div>
+        <div style="font-size:0.82rem;color:var(--jade-deep);font-weight:600;background:var(--jade-tint);padding:6px 12px;border-radius:var(--pill)">${chemoPct}%</div>
+      </div>
+      <div class="chemo-track"><div class="chemo-track-fill" style="width:${chemoPct}%"></div></div>
+      <div class="chemo-dots">${chemoDots}</div>
+    </div>
+  `;
+
+  // Init dad photo shuffle after image-slots hydrate from sidecar
+  initDadPhotoShuffle();
+}
+
+// ===== Dad photo shuffle ==========================================
+let dadPhotoIdx = 0;
+let dadPhotoInited = false;
+function _dadSlots() { return Array.from(document.querySelectorAll('.dad-photo-slot')); }
+function _dadFilledSet() {
+  const filled = [];
+  _dadSlots().forEach((s, i) => {
+    const img = s.shadowRoot && s.shadowRoot.querySelector('img');
+    // image-slot fills the <img> when a user-supplied image is dropped/loaded;
+    // empty slots have no <img> at all (just the placeholder UI).
+    if (img && img.src && img.getBoundingClientRect().width > 0) filled.push(i);
+  });
+  return filled;
+}
+function _dadUpdateDots() {
+  const filled = new Set(_dadFilledSet());
+  document.querySelectorAll('.dad-photo-dot').forEach((d, i) => {
+    d.classList.toggle('filled', filled.has(i));
+    d.classList.toggle('active', i === dadPhotoIdx);
+  });
+}
+function _dadShow(idx) {
+  dadPhotoIdx = idx;
+  _dadSlots().forEach((s, i) => s.classList.toggle('active', i === idx));
+  _dadUpdateDots();
+}
+function shuffleDadPhoto(random) {
+  const slots = _dadSlots();
+  if (!slots.length) return;
+  const filled = _dadFilledSet();
+  const btn = document.querySelector('.dad-photo-shuffle');
+  if (btn) { btn.classList.add('spin'); setTimeout(() => btn.classList.remove('spin'), 400); }
+  let next;
+  if (filled.length === 0) {
+    // No photos yet — just cycle through empty slots so user sees the drop prompt move.
+    next = (dadPhotoIdx + 1) % slots.length;
+  } else if (filled.length === 1) {
+    next = filled[0];
+  } else if (random) {
+    do { next = filled[Math.floor(Math.random() * filled.length)]; }
+    while (next === dadPhotoIdx);
+  } else {
+    const pos = filled.indexOf(dadPhotoIdx);
+    next = filled[(pos + 1) % filled.length];
+  }
+  _dadShow(next);
+}
+function initDadPhotoShuffle() {
+  // Wait for image-slot sidecar fetch + image decode
+  const tryInit = (attempt = 0) => {
+    const filled = _dadFilledSet();
+    if (filled.length > 0) {
+      _dadShow(filled[Math.floor(Math.random() * filled.length)]);
+      _watchDadPhotos();
+      dadPhotoInited = true;
+    } else if (attempt < 12) {
+      setTimeout(() => tryInit(attempt + 1), 200);
+    } else {
+      // Still nothing after ~2.4s — leave on slot 1 so user gets a drop prompt.
+      _dadShow(0);
+      _watchDadPhotos();
+      dadPhotoInited = true;
+    }
+  };
+  if (!dadPhotoInited) tryInit();
+  else _dadUpdateDots();
+}
+function _watchDadPhotos() {
+  // Update dots when user drops a new photo into a slot.
+  _dadSlots().forEach(s => {
+    if (!s.shadowRoot || s._dadWatched) return;
+    s._dadWatched = true;
+    const mo = new MutationObserver(() => _dadUpdateDots());
+    mo.observe(s.shadowRoot, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
+  });
+}
+
+// Simple SVG sparkline helper
+function sparkline(values, w, h, color) {
+  if (!values || values.length < 2) return '';
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const step = w / (values.length - 1);
+  const pts = values.map((v, i) => `${(i * step).toFixed(1)},${(h - ((v - min) / range) * h).toFixed(1)}`).join(' ');
+  return `<svg class="vital-card-spark" viewBox="0 0 ${w} ${h}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="${pts}"/></svg>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// LOG TAB
+// ═══════════════════════════════════════════════════════════
+function renderLog() {
+  const today = getTodayEntry();
+  const alreadyLogged = !!today;
+
+  if (alreadyLogged && logState.pain === null) {
+    // Pre-fill from existing entry
+    const painMap = { '0 - None': 0, '1-2 Mild': 1, '3-4 Moderate': 2, '5-6 Significant': 3, '7-8 Severe': 4 };
+    logState.pain = painMap[today['Pain Level']] ?? null;
+    const ratingMap = { 'Good day': 0, 'Okay': 1, 'Tough day': 2 };
+    logState.rating = ratingMap[today['Overall Status']] ?? null;
+    logState.weight = today['Weight (kg)'] || '';
+    logState.bloodSugar = today['Blood Sugar (Morning)'] || '';
+    logState.notes = today['Notes'] || '';
+    if (bool(today['Nausea'])) logState.symptoms.add('Buồn nôn');
+    if (bool(today['Vomiting'])) logState.symptoms.add('Nôn');
+    if (bool(today['Diarrhea'])) logState.symptoms.add('Tiêu chảy');
+    if (bool(today['Bloating'])) logState.symptoms.add('Đầy hơi');
+    if ((today['Dumping Episodes'] || 0) > 0) logState.symptoms.add('Dumping');
+  }
+
+  const faces = [
+    { emoji: '😊', label: 'Rất nhẹ', idx: 0 },
+    { emoji: '🙂', label: 'Nhẹ', idx: 1 },
+    { emoji: '😐', label: 'Vừa', idx: 2 },
+    { emoji: '😣', label: 'Khá đau', idx: 3 },
+    { emoji: '😢', label: 'Đau nhiều', idx: 4 },
+  ];
+  const facesHtml = faces.map(f => `
+    <button class="face-btn${logState.pain === f.idx ? ' selected' : ''}"
+      onclick="selectPain(${f.idx})" type="button" aria-label="${f.label}">
+      <span class="face-emoji">${f.emoji}</span>
+      <span class="face-label">${f.label}</span>
+    </button>`).join('');
+
+  const symptoms = ['Buồn nôn','Nôn','Tiêu chảy','Đầy hơi','Dumping','Mệt mỏi'];
+  const sympHtml = symptoms.map(s => `
+    <button class="symptom-chip${logState.symptoms.has(s) ? ' selected' : ''}"
+      onclick="toggleSymptom('${s}')" type="button">${s}</button>`).join('') +
+    `<button class="symptom-chip none-chip${logState.symptoms.has('none') ? ' selected' : ''}"
+      onclick="selectNoSymptoms()" type="button">Không có triệu chứng</button>`;
+
+  const ratings = [
+    { glyph: '🌿', label: 'Ngày tốt',   value: 0, selClass: 'selected-good' },
+    { glyph: '☁️', label: 'Bình thường', value: 1, selClass: 'selected-okay' },
+    { glyph: '🌧', label: 'Khó khăn',   value: 2, selClass: 'selected-tough' },
+  ];
+  const ratingBtns = ratings.map(r => `
+    <button class="day-rating-btn${logState.rating === r.value ? ' selected ' + r.selClass : ''}"
+      onclick="selectRating(${r.value})" type="button">
+      <span class="rating-glyph">${r.glyph}</span>
+      <span>${r.label}</span>
+    </button>`).join('');
+
+  const bannerHtml = alreadyLogged ? `
+    <div class="already-logged-banner">
+      <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span>Bố đã ghi nhật ký hôm nay. Có thể cập nhật bên dưới.</span>
+    </div>` : '';
+
+  document.getElementById('logContent').innerHTML = `
+    <div class="log-header">
+      <div class="log-eyebrow">${vnDate(new Date())}</div>
+      <div class="log-title">Nhật ký hôm nay</div>
+      <div class="log-date">Một vài câu hỏi nhanh — bố trả lời thế nào cũng được.</div>
+    </div>
+    ${bannerHtml}
+    <div class="card">
+      <div class="log-section-title"><span class="log-section-num">1</span>Mức đau hôm nay</div>
+      <div class="log-section-hint">Chọn khuôn mặt gần nhất với cảm giác của bố.</div>
+      <div class="face-grid">${facesHtml}</div>
+    </div>
+    <div class="card">
+      <div class="log-section-title"><span class="log-section-num">2</span>Triệu chứng</div>
+      <div class="log-section-hint">Có thể chọn nhiều mục.</div>
+      <div class="symptom-chips" id="sympChips">${sympHtml}</div>
+    </div>
+    <div class="card">
+      <div class="log-section-title"><span class="log-section-num">3</span>Đường huyết sáng</div>
+      <div class="log-section-hint">Tùy chọn — chỉ nếu bố đo sáng nay.</div>
+      <div class="num-input-row">
+        <input type="number" class="num-input" id="bsInput" placeholder="7.5"
+          step="0.1" min="2" max="30" value="${logState.bloodSugar}"
+          inputmode="decimal" oninput="logState.bloodSugar=this.value">
+        <span class="num-unit">mmol/L</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="log-section-title"><span class="log-section-num">4</span>Cân nặng</div>
+      <div class="log-section-hint">Tùy chọn — đo trước bữa sáng.</div>
+      <div class="num-input-row">
+        <input type="number" class="num-input" id="weightInput" placeholder="52.0"
+          step="0.1" min="30" max="120" value="${logState.weight}"
+          inputmode="decimal" oninput="logState.weight=this.value">
+        <span class="num-unit">kg</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="log-section-title"><span class="log-section-num">5</span>Ngày hôm nay thế nào?</div>
+      <div class="log-section-hint">Một từ — đủ cho cả nhà hiểu.</div>
+      <div class="day-rating-btns">${ratingBtns}</div>
+    </div>
+    <div class="card">
+      <div class="log-section-title"><span class="log-section-num">6</span>Ghi chú thêm</div>
+      <div class="log-section-hint">Bất cứ điều gì bố muốn nói thêm.</div>
+      <textarea class="notes-textarea" id="notesInput"
+        placeholder="Ví dụ: ngủ ngon hơn hôm qua, đi bộ 20 phút trong vườn…"
+        oninput="logState.notes=this.value">${logState.notes}</textarea>
+    </div>
+    <button class="sticky-save" id="saveBtn" onclick="saveLog()">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Lưu nhật ký
+    </button>
+    <div style="height:12px"></div>
+  `;
+}
+
+function selectPain(idx) {
+  logState.pain = idx;
+  document.querySelectorAll('.face-btn').forEach((b, i) => {
+    b.classList.toggle('selected', i === idx);
+  });
+}
+function toggleSymptom(s) {
+  logState.symptoms.delete('none');
+  if (logState.symptoms.has(s)) logState.symptoms.delete(s);
+  else logState.symptoms.add(s);
+  refreshSymptomChips();
+}
+function selectNoSymptoms() {
+  logState.symptoms.clear();
+  logState.symptoms.add('none');
+  refreshSymptomChips();
+}
+function refreshSymptomChips() {
+  const chips = document.getElementById('sympChips');
+  if (!chips) return;
+  chips.querySelectorAll('.symptom-chip').forEach(b => {
+    const s = b.textContent.trim();
+    if (s === 'Không có triệu chứng') {
+      b.classList.toggle('selected', logState.symptoms.has('none'));
+    } else {
+      b.classList.toggle('selected', logState.symptoms.has(s));
+    }
+  });
+}
+function selectRating(v) {
+  logState.rating = v;
+  const selClasses = ['selected-good','selected-okay','selected-tough'];
+  document.querySelectorAll('.day-rating-btn').forEach((b, i) => {
+    b.className = 'day-rating-btn' + (i === v ? ' selected ' + selClasses[i] : '');
+  });
+}
+
+async function saveLog() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Đang lưu...';
+
+  const painEnumMap = ['0 - None','1-2 Mild','3-4 Moderate','5-6 Significant','7-8 Severe'];
+  const ratingEnumMap = ['Good day','Okay','Tough day'];
+
+  const payload = {};
+  if (logState.pain !== null) payload['Pain Level'] = painEnumMap[logState.pain];
+  if (logState.rating !== null) payload['Overall Status'] = ratingEnumMap[logState.rating];
+  if (logState.bloodSugar) payload['Blood Sugar (Morning)'] = parseFloat(logState.bloodSugar);
+  if (logState.weight) payload['Weight (kg)'] = parseFloat(logState.weight);
+  if (logState.notes) payload['Notes'] = logState.notes;
+  payload['Nausea'] = logState.symptoms.has('Buồn nôn') ? '__YES__' : '__NO__';
+  payload['Vomiting'] = logState.symptoms.has('Nôn') ? '__YES__' : '__NO__';
+  payload['Diarrhea'] = logState.symptoms.has('Tiêu chảy') ? '__YES__' : '__NO__';
+  payload['Bloating'] = logState.symptoms.has('Đầy hơi') ? '__YES__' : '__NO__';
+  if (logState.symptoms.has('Dumping')) {
+    const today = getTodayEntry();
+    if (!today || !today['Dumping Episodes']) payload['Dumping Episodes'] = 1;
+  }
+  if (logState.symptoms.has('Mệt mỏi')) {
+    payload['Notes'] = (payload['Notes'] ? payload['Notes'] + ' | ' : '') + 'Mệt mỏi';
+  }
+  payload['Logged By'] = 'Dad';
+  const today = todayISO();
+  payload['date:Date:start'] = today;
+
+  const result = await saveDailyLog(payload);
+
+  if (result.ok) {
+    showToast('Đã lưu! Cảm ơn Bố Xuyên 💙', 'success');
+    await loadData();
+    logState = { pain: null, symptoms: new Set(), bloodSugar: '', weight: '', rating: null, notes: '' };
+    switchTab('home');
+  } else {
+    showToast('Lỗi lưu: ' + (result.error || 'Thử lại'), 'error');
+    btn.disabled = false;
+    btn.textContent = 'Lưu nhật ký';
+  }
+}
+
+async function saveDailyLog(payload) {
+  try {
+    const existing = getTodayEntry();
+    if (existing && existing['_pageId']) {
+      await apiFetch('/api/notion-update', { page_id: existing['_pageId'], properties: payload });
+    } else {
+      const name = new Date().toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric', year: 'numeric' });
+      await apiFetch('/api/notion-create', { database_id: DS_ID, name, properties: payload });
+    }
+    return { ok: true };
+  } catch(err) {
+    return { ok: false, error: err.message };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// PROGRESS TAB
+// ═══════════════════════════════════════════════════════════
+function renderProgress() {
+  // Streak
+  const last7 = entries.slice(0, 7).reverse();
+  let streak = 0;
+  for (const e of [...entries]) {
+    if (e['Overall Status'] === 'Good day') streak++;
+    else break;
+  }
+  const dotColors = {
+    'Good day': 'good', 'Okay': 'okay', 'Tough day': 'tough', 'Bad day': 'bad'
+  };
+  const streakDots = last7.map(e =>
+    `<div class="streak-dot ${dotColors[e['Overall Status']] || ''}" title="${fmtDate(e['date:Date:start'])}"></div>`
+  ).join('');
+
+  // Weight
+  const weightEntries = entries.filter(e => e['Weight (kg)']).slice(0, 30);
+  const latestWeight = weightEntries[0]?.['Weight (kg)'] || '—';
+  const firstWeight = weightEntries[weightEntries.length - 1]?.['Weight (kg)'];
+  const weightDelta = firstWeight && latestWeight !== '—' ? (latestWeight - firstWeight).toFixed(1) : null;
+
+  // Nutrition (last 7 days)
+  const recent7 = entries.slice(0, 7);
+  const avgCal = Math.round(calcAvg(recent7, 'Calories Est.'));
+  const avgProt = Math.round(calcAvg(recent7, 'Protein Est. (g)'));
+  const calPct = Math.min(100, Math.round((avgCal / 1500) * 100));
+  const protPct = Math.min(100, Math.round((avgProt / 60) * 100));
+  const calColor = calPct >= 80 ? 'good-fill' : 'okay-fill';
+  const protColor = protPct >= 80 ? 'good-fill' : 'okay-fill';
+
+  // Chemo
+  const chemoRound = Math.min(Math.max(1, Math.ceil(entries.length / 7)), CHEMO_TOTAL);
+  const chemoPct = Math.round((chemoRound / CHEMO_TOTAL) * 100);
+  const chemoDots = Array.from({length: CHEMO_TOTAL}, (_, i) => {
+    const cls = i < chemoRound - 1 ? 'done' : i === chemoRound - 1 ? 'current' : 'pending';
+    return `<div class="chemo-dot ${cls}">${i+1}</div>`;
+  }).join('');
+
+  document.getElementById('progressContent').innerHTML = `
+    <div class="card">
+      <div class="card-title">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M8.56 2.9A7 7 0 0 1 19 9v3l3 3-3 3v.5a1.5 1.5 0 0 1-1.5 1.5H18a3 3 0 0 1-6 0H6.5A1.5 1.5 0 0 1 5 18.5V18l-3-3 3-3V9c0-1.6.54-3.09 1.44-4.28"/></svg>
+        Chuỗi ngày tốt
+      </div>
+      <div class="big-stat">${streak}</div>
+      <div class="big-stat-sub">ngày tốt liên tiếp</div>
+      <div class="streak-dots" style="margin-top:12px">${streakDots || '<span style="color:var(--text-sec);font-size:0.82rem">Chưa có dữ liệu</span>'}</div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+        Cân nặng
+      </div>
+      <div class="big-stat">${latestWeight !== '—' ? latestWeight + ' kg' : '—'}</div>
+      ${weightDelta !== null ? `<div class="big-stat-sub" style="color:${parseFloat(weightDelta)>=0?'var(--good)':'var(--bad)'}">${parseFloat(weightDelta)>=0?'+':''}${weightDelta} kg so với đầu ghi</div>` : ''}
+      <div id="weightChartProg"><div style="height:160px;display:flex;align-items:center;justify-content:center;color:var(--text-sec);font-size:0.88rem">${weightEntries.length < 2 ? 'Cần ít nhất 2 lần cân để hiển thị biểu đồ' : ''}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        Dinh dưỡng tuần này
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-label">
+          <span>Calo (mục tiêu 1500 kcal)</span>
+          <span class="pb-val">${avgCal} <span style="font-size:0.78rem;color:var(--mute);font-family:var(--font-sans);font-weight:500">kcal</span></span>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill ${calColor}" style="width:${calPct}%"></div></div>
+        ${calPct >= 80 ? '<div class="encourage-text">Đang tiến gần mục tiêu — tiếp tục nhé!</div>' : ''}
+      </div>
+      <div class="progress-bar-wrap" style="margin-top:14px">
+        <div class="progress-bar-label">
+          <span>Protein (mục tiêu 60g)</span>
+          <span class="pb-val">${avgProt}<span style="font-size:0.78rem;color:var(--mute);font-family:var(--font-sans);font-weight:500">g</span></span>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill ${protColor}" style="width:${protPct}%"></div></div>
+        ${protPct >= 80 ? '<div class="encourage-text">Protein tốt!</div>' : ''}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Hành trình điều trị
+      </div>
+      <div class="chemo-stat">
+        <span class="chemo-round">${chemoRound}</span>
+        <span class="chemo-of">/ ${CHEMO_TOTAL} đợt FOLFIRINOX</span>
+      </div>
+      <div class="chemo-track"><div class="chemo-track-fill" style="width:${chemoPct}%"></div></div>
+      <div class="chemo-dots">${chemoDots}</div>
+      <div class="chemo-next"><span class="chemo-next-dot"></span>Còn ${CHEMO_TOTAL - chemoRound} đợt</div>
+    </div>
+  `;
+
+  // Render weight chart if enough data
+  if (weightEntries.length >= 2) {
+    const ctx = document.createElement('canvas');
+    ctx.style.maxHeight = '160px';
+    document.getElementById('weightChartProg').innerHTML = '';
+    document.getElementById('weightChartProg').appendChild(ctx);
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [...weightEntries].reverse().map(e => fmtDate(e['date:Date:start'])),
+        datasets: [{
+          data: [...weightEntries].reverse().map(e => e['Weight (kg)']),
+          borderColor: '#3F7858',
+          backgroundColor: 'rgba(63,120,88,0.10)',
+          fill: true, tension: 0.3, pointRadius: 4,
+          pointBackgroundColor: '#3F7858', pointBorderColor: '#FFFDF8', pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: { y: { title: { display: true, text: 'kg', font: { size: 11 } }, grid: { color: '#EFE7D6' }, ticks: { color: '#8A7E69' } }, x: { ticks: { font: { size: 10 } } } },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// ANALYSIS TAB
+// ═══════════════════════════════════════════════════════════
+function renderAnalysis() {
+  analysisRendered = true;
+  const sorted = [...entries].reverse();
+  const labels = sorted.map(e => fmtDate(e['date:Date:start']));
+
+  document.getElementById('analysisContent').innerHTML = `
+    <div class="card">
+      <div class="card-title">Mức đau theo thời gian</div>
+      <div class="chart-container"><canvas id="painChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Calo và Protein</div>
+      <div class="chart-container"><canvas id="nutritionChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Tần suất triệu chứng</div>
+      <div class="chart-container"><canvas id="symptomChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Xu hướng cân nặng</div>
+      <div class="chart-container"><canvas id="weightChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Nhận xét</div>
+      <div id="insightsList"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Nhật ký gần đây</div>
+      <div id="timelineList"></div>
+    </div>
+  `;
+
+  if (sorted.length > 0) {
+    new Chart(document.getElementById('painChart'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Đau', data: sorted.map(e => painToNum(e['Pain Level'])),
+          borderColor: '#B14A2E', backgroundColor: 'rgba(177,74,46,0.08)',
+          fill: true, tension: 0.3, pointRadius: 5,
+          pointBackgroundColor: sorted.map(e => painColor(painToNum(e['Pain Level']))), pointBorderColor: '#FFFDF8', pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: { y: { min: 0, max: 10, title: { display: true, text: 'Đau (0-10)', font:{size:11} }, grid: { color: '#dbeafe' } }, x: { ticks: { font: { size: 10 } } } },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    new Chart(document.getElementById('nutritionChart'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Calo', data: sorted.map(e => e['Calories Est.'] || 0), backgroundColor: '#3F7858', borderRadius: 6, yAxisID: 'y' },
+          { label: 'Protein (g)', data: sorted.map(e => e['Protein Est. (g)'] || 0), backgroundColor: '#B47A1C', borderRadius: 6, yAxisID: 'y1' }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y: { position: 'left', title: { display: true, text: 'Calo', font:{size:11} }, beginAtZero: true, grid: { color: '#dbeafe' } },
+          y1: { position: 'right', title: { display: true, text: 'Protein (g)', font:{size:11} }, beginAtZero: true, grid: { drawOnChartArea: false } }
+        }
+      }
+    });
+
+    const symCounts = {
+      'Buồn nôn': entries.filter(e => bool(e['Nausea'])).length,
+      'Nôn': entries.filter(e => bool(e['Vomiting'])).length,
+      'Tiêu chảy': entries.filter(e => bool(e['Diarrhea'])).length,
+      'Đầy hơi': entries.filter(e => bool(e['Bloating'])).length,
+      'Dumping': entries.filter(e => (e['Dumping Episodes'] || 0) > 0).length
+    };
+    new Chart(document.getElementById('symptomChart'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(symCounts),
+        datasets: [{ data: Object.values(symCounts), backgroundColor: ['#C56A38','#B14A2E','#B47A1C','#6E5A8C','#3F7858'], borderRadius: 6 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        indexAxis: 'y',
+        scales: { x: { beginAtZero: true, title: { display: true, text: 'Số ngày', font:{size:11} }, grid: { color: '#dbeafe' } } },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    const weightEntries = sorted.filter(e => e['Weight (kg)']);
+    if (weightEntries.length > 0) {
+      new Chart(document.getElementById('weightChart'), {
+        type: 'line',
+        data: {
+          labels: weightEntries.map(e => fmtDate(e['date:Date:start'])),
+          datasets: [{
+            label: 'Cân nặng (kg)', data: weightEntries.map(e => e['Weight (kg)']),
+            borderColor: '#3F7858', backgroundColor: 'rgba(63,120,88,0.10)',
+            fill: true, tension: 0.3, pointRadius: 5, pointBackgroundColor: '#3F7858', pointBorderColor: '#FFFDF8', pointBorderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: { y: { title: { display: true, text: 'kg', font:{size:11} }, grid: { color: '#dbeafe' } }, x: { ticks: { font:{size:10} } } },
+          plugins: { legend: { display: false } }
+        }
+      });
+    } else {
+      document.getElementById('weightChart').parentElement.innerHTML = '<p style="color:var(--text-sec);font-size:0.88rem;padding:20px 0">Chưa có dữ liệu cân nặng.</p>';
+    }
+  }
+
+  renderInsights();
+  renderTimeline();
+}
+
+function renderInsights() {
+  const el = document.getElementById('insightsList');
+  if (!el) return;
+  const insights = [];
+  const avgCal = calcAvg(entries, 'Calories Est.');
+  if (avgCal < 1200 && entries.length > 0)
+    insights.push({ type: 'warn', text: `Trung bình calo chỉ ${Math.round(avgCal)} kcal/ngày — dưới mức tối thiểu 1500 kcal cho bệnh nhân hóa trị. Cần thêm bữa phụ hoặc thực phẩm giàu năng lượng.` });
+  const avgProt = calcAvg(entries, 'Protein Est. (g)');
+  if (avgProt < 60 && entries.length > 0)
+    insights.push({ type: 'warn', text: `Protein trung bình ${Math.round(avgProt)}g/ngày — dưới mục tiêu 60-80g. Thiếu protein gây mất cơ. Thêm cá hấp, đậu hũ, hoặc sữa protein.` });
+  const dumpingDays = entries.filter(e => (e['Dumping Episodes'] || 0) > 0);
+  if (dumpingDays.length > 2)
+    insights.push({ type: 'info', text: `Có ${dumpingDays.length} ngày bị hội chứng dumping. Ưu tiên cháo thay cơm, ăn ít và thường xuyên hơn, uống Creon đúng đầu bữa.` });
+  const goodDays = entries.filter(e => e['Overall Status'] === 'Good day');
+  if (goodDays.length > 0)
+    insights.push({ type: 'good', text: `${goodDays.length} ngày tốt trong tổng số ${entries.length} ngày ghi — đây là dấu hiệu tích cực. Ghi chú xem hôm đó ăn gì để lặp lại!` });
+  const weights = entries.filter(e => e['Weight (kg)']).sort((a,b) => (a['date:Date:start']||'').localeCompare(b['date:Date:start']||''));
+  if (weights.length >= 2) {
+    const diff = weights[weights.length-1]['Weight (kg)'] - weights[0]['Weight (kg)'];
+    if (diff < -1) insights.push({ type: 'warn', text: `Cân nặng giảm ${Math.abs(diff.toFixed(1))} kg. Cần trao đổi với bác sĩ về hỗ trợ dinh dưỡng.` });
+    else if (diff >= 0) insights.push({ type: 'good', text: `Cân nặng ổn định hoặc tăng. Đây là dấu hiệu tốt!` });
+  }
+  if (entries.length < 5)
+    insights.push({ type: 'info', text: `Mới có ${entries.length} ngày ghi. Ghi ít nhất 7 ngày để thấy xu hướng rõ hơn.` });
+  if (insights.length === 0)
+    insights.push({ type: 'info', text: 'Tiếp tục ghi nhật ký — càng nhiều dữ liệu càng thấy rõ xu hướng!' });
+  el.innerHTML = insights.map(i => `<div class="insight-item insight-${i.type}">${i.text}</div>`).join('');
+}
+
+function renderTimeline() {
+  const el = document.getElementById('timelineList');
+  if (!el) return;
+  if (!entries.length) { el.innerHTML = '<p style="color:var(--text-sec)">Chưa có dữ liệu.</p>'; return; }
+  el.innerHTML = entries.slice(0, 14).map(e => {
+    const syms = [];
+    if (bool(e['Nausea'])) syms.push('Buồn nôn');
+    if (bool(e['Vomiting'])) syms.push('Nôn');
+    if (bool(e['Diarrhea'])) syms.push('Tiêu chảy');
+    if (bool(e['Bloating'])) syms.push('Đầy hơi');
+    if (e['Dumping Episodes']) syms.push(`Dumping x${e['Dumping Episodes']}`);
+    const sympHtml = syms.length
+      ? syms.map(s => `<span class="symptom-tag">${s}</span>`).join('')
+      : '<span class="symptom-tag ok">Không triệu chứng nặng</span>';
+    return `<div class="day-card">
+      <div class="day-header">
+        <span class="day-date">${fmtDate(e['date:Date:start'])}</span>
+        <span class="day-status-badge ${statusClass(e['Overall Status'])}">${e['Overall Status'] || '—'}</span>
+      </div>
+      <div class="day-grid">
+        <dt>Đau</dt><dd>${e['Pain Level'] || '—'}</dd>
+        <dt>Bữa ăn</dt><dd>${[e['Breakfast'],e['Lunch'],e['Dinner']].filter(Boolean).join(' | ') || '—'}</dd>
+        <dt>Calo/Protein</dt><dd>${e['Calories Est.'] ? e['Calories Est.'] + ' kcal' : '—'} / ${e['Protein Est. (g)'] ? e['Protein Est. (g)'] + 'g' : '—'}</dd>
+        <dt>Đường huyết</dt><dd>${e['Blood Sugar Range'] || (e['Blood Sugar (Morning)'] ? e['Blood Sugar (Morning)'] + ' mmol/L (sáng)' : '—')}</dd>
+      </div>
+      <div class="symptom-tags">${sympHtml}</div>
+      ${e['Notes'] ? `<div style="margin-top:6px;font-size:0.8rem;color:var(--text-sec);font-style:italic">${e['Notes']}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHAT — AI ASSISTANT
+// ═══════════════════════════════════════════════════════════
+function isLiveMode() { return true; }
+
+function updateModeUI() {
+  const badge = document.getElementById('modeBadge');
+  const notice = document.getElementById('mockNotice');
+  if (!badge) return;
+  badge.textContent = 'Live AI'; badge.className = 'chat-mode-badge live';
+  if (notice) notice.style.display = 'none';
+}
+
+function sendPrompt(text) {
+  switchTab('chat');
+  const input = document.getElementById('chatInput');
+  input.value = text;
+  autoResizeTextarea(input);
+  submitChat();
+}
+
+async function submitChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || isResponding) return;
+  const welcome = document.getElementById('chatWelcome');
+  if (welcome) welcome.style.display = 'none';
+  document.getElementById('chatSuggestions').style.display = 'none';
+  input.value = '';
+  autoResizeTextarea(input);
+  addMessage('user', text);
+  chatHistory.push({ role: 'user', content: text });
+  isResponding = true;
+  document.getElementById('sendBtn').disabled = true;
+  const typing = showTyping();
+  try {
+    let response;
+    if (isLiveMode()) response = await callAnthropicAPI(chatHistory);
+    else { await delay(700 + Math.random() * 600); response = getMockResponse(text); }
+    typing.remove();
+    addMessage('assistant', response);
+    chatHistory.push({ role: 'assistant', content: response });
+    saveConversation();
+  } catch(err) {
+    typing.remove();
+    addMessage('assistant', `Xin lỗi, có lỗi: ${err.message}. Kiểm tra API key trong Cài đặt.`);
+  }
+  isResponding = false;
+  document.getElementById('sendBtn').disabled = false;
+  input.focus();
+}
+
+function addMessage(role, content) {
+  const container = document.getElementById('chatMessages');
+  const isUser = role === 'user';
+  const div = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar';
+  avatar.textContent = isUser ? 'Bạn' : 'AI';
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.innerHTML = formatMessage(content);
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  const inner = document.createElement('div');
+  inner.style.maxWidth = '100%';
+  inner.appendChild(bubble);
+  inner.appendChild(meta);
+  div.appendChild(avatar);
+  div.appendChild(inner);
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function formatMessage(text) {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^[-•] (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)+/g, m => `<ul>${m}</ul>`)
+    .split('\n\n').map(p => p.trim()).filter(Boolean)
+    .map(p => p.startsWith('<ul>') ? p : `<p>${p}</p>`)
+    .join('');
+}
+
+function showTyping() {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'typing-indicator';
+  div.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitChat(); }
+}
+function autoResizeTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+async function callAnthropicAPI(messages) {
+  const data = await apiFetch('/api/chat', {
+    model: selectedModel, max_tokens: 1024, system: buildSystemPrompt(), messages
+  });
+  return data.content?.[0]?.text || 'Không có phản hồi.';
+}
+
+function buildSystemPrompt() {
+  const n = entries.length;
+  const recent = entries.slice(0, 10);
+  let prompt = `Bạn là trợ lý sức khỏe AI, hỗ trợ gia đình chăm sóc Nguyễn Sơn Xuyên ("Bố Xuyên"), 66 tuổi, người Việt Nam, đang điều trị ung thư tụy giai đoạn II sau khi cắt toàn bộ tụy. Ông bị tiểu đường type 3c (do thiếu tụy) và đang hóa trị FOLFIRINOX (2 tuần/lần, 12 đợt).
+
+Thông tin y tế quan trọng:
+- Đã cắt toàn bộ tụy → cần Creon với mỗi bữa ăn, không sản xuất insulin/glucagon
+- Tiểu đường type 3c → Lantus 8 đơn vị tối + Apidra 2-6 đơn vị trước ăn + Glucophage XR 500mg sáng
+- FOLFIRINOX → gây buồn nôn, mệt mỏi, thần kinh ngoại biên
+- Hội chứng dumping → ăn nhiều đường/chất béo dễ kích hoạt
+- Thiếu cân (~BMI 18) → lượng calo rất quan trọng
+- CGM: ngày ăn cháo trung bình 7.5 mmol/L, ngày ăn cơm ~10.0 mmol/L
+
+Thuốc: FOLFIRINOX, Apidra, Lantus, Glucophage XR, Creon, Pepsin, Vitamin tổng hợp, Loperamide PRN, Smecta PRN, chống nôn PRN, giảm đau PRN, G-CSF PRN, Milk Thistle.
+
+**QUAN TRỌNG: Luôn trả lời bằng tiếng Việt. Thân thiện, ấm áp, thực tế.**
+Dữ liệu: ${n} ngày đã ghi.`;
+  if (recent.length > 0) {
+    prompt += '\n\nDữ liệu gần đây (${recent.length} ngày):\n';
+    recent.forEach(e => {
+      prompt += `\n${e['date:Date:start']||'?'}: ${e['Overall Status']||'—'} | Đau: ${e['Pain Level']||'—'} | Calo: ${e['Calories Est.']||'—'} kcal | Protein: ${e['Protein Est. (g)']||'—'}g | Bữa ăn: ${[e['Breakfast'],e['Lunch'],e['Dinner']].filter(Boolean).join('/')||'—'} | Dumping: ${e['Dumping Episodes']||0}`;
+    });
+  }
+  prompt += '\n\nHãy ấm áp, thực tế và cụ thể. Luôn lưu ý khi cần thảo luận với bác sĩ Hạnh, không đưa ra chỉ định y tế trực tiếp.';
+  return prompt;
+}
+
+function getMockResponse(text) {
+  const lower = text.toLowerCase();
+  const n = entries.length;
+  const recent = entries.slice(0, 7);
+  const avgCal = calcAvg(recent, 'Calories Est.');
+  const avgProt = calcAvg(recent, 'Protein Est. (g)');
+  const goodDays = entries.filter(e => e['Overall Status'] === 'Good day').length;
+
+  if (lower.includes('phân tích') || lower.includes('xu hướng') || lower.includes('mẫu')) {
+    return `**Phân tích sức khỏe** (${n} ngày ghi)\n\n` +
+      `- **Calo trung bình**: ~${Math.round(avgCal)} kcal/ngày — ` + (avgCal < 1300 ? 'dưới mục tiêu 1500 kcal.' : 'đang tiến gần mục tiêu.') + '\n' +
+      `- **Protein trung bình**: ~${Math.round(avgProt)}g/ngày — ` + (avgProt < 60 ? 'dưới mục tiêu 60-80g, có nguy cơ mất cơ.' : 'trong ngưỡng phù hợp.') + '\n' +
+      `- **Ngày tốt**: ${goodDays}/${n} ngày đã ghi.\n\n` +
+      `*(Chế độ mô phỏng — thêm API key để phân tích thực tế.)*`;
+  }
+  if (lower.includes('chế độ ăn') || lower.includes('ăn') || lower.includes('calo') || lower.includes('dumping')) {
+    return `**Gợi ý chế độ ăn cho Bố Xuyên**\n\n` +
+      `**Giảm dumping:**\n- Ưu tiên cháo thay cơm — cháo đường huyết ~7.5, cơm ~10.0 mmol/L\n- Ăn 5-6 bữa nhỏ thay 3 bữa lớn\n- Tránh nước trái cây ngọt, đặc biệt nước cam\n- Uống Creon ngay đầu bữa, không được bỏ\n\n` +
+      `**Tăng calo:**\n- Thêm dầu MCT hoặc bơ đậu phộng vào cháo (+100 kcal)\n- Cá hấp, đậu hũ, cháo gà là lựa chọn tốt\n- Bột protein hòa tan vào súp hoặc cháo\n\n` +
+      `*(Mô phỏng — thêm API key để phân tích dựa trên dữ liệu thực.)*`;
+  }
+  if (lower.includes('đau')) {
+    return `**Phân tích mức độ đau**\n\nĐau thường tăng trong và sau hóa trị FOLFIRINOX (ngày 2-4 sau truyền).\n\n**Khuyến nghị thảo luận với bác sĩ Hạnh:**\n- Xem xét điều chỉnh thuốc giảm đau\n- Chặn đám rối dương (celiac plexus block) — hiệu quả với ung thư tụy\n- Chăm sóc giảm nhẹ song song với điều trị\n\n*(Mô phỏng — thêm API key để phân tích từ dữ liệu thực.)*`;
+  }
+  if (lower.includes('tóm tắt') || lower.includes('tuần') || lower.includes('bác sĩ')) {
+    return `**Tóm tắt sức khỏe tuần này**\n\n**Dinh dưỡng:**\n- Calo trung bình: ~${Math.round(avgCal)} kcal (mục tiêu 1500-1800)\n- Protein: ~${Math.round(avgProt)}g (mục tiêu 60-80g)\n\n**Báo cáo với bác sĩ Hạnh:**\n1. Xem xét liều Creon — sau cắt tụy toàn bộ cần 50,000-75,000 đơn vị lipase/bữa\n2. Kiểm tra Vitamin D, B12, sắt, vitamin tan trong dầu (A, E, K)\n3. Theo dõi tương tác Milk Thistle + FOLFIRINOX\n\n*(Mô phỏng — thêm API key để tóm tắt thực tế.)*`;
+  }
+  return `Tôi hiểu bạn hỏi về: **"${text.length > 50 ? text.slice(0,50)+'...' : text}"**\n\nTôi có ${n} ngày dữ liệu của Bố Xuyên. Bạn có thể hỏi cụ thể hơn về:\n- Triệu chứng (đau, buồn nôn, dumping)\n- Dinh dưỡng (calo, protein, bữa ăn tốt)\n- Xu hướng sức khỏe\n- Thuốc (Creon, insulin, hóa trị)\n\n*(Chế độ mô phỏng — thêm API key trong Cài đặt để có AI thực.)*`;
+}
+
+// Settings
+function openSettings() {
+  document.getElementById('modelSelect').value = selectedModel;
+  updateSettingsStatus();
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
+function updateSettingsStatus() {
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  dot.className = 'status-dot live';
+  text.textContent = 'Live AI — ' + selectedModel;
+}
+function saveSettings() {
+  selectedModel = document.getElementById('modelSelect').value;
+  localStorage.setItem('health_model', selectedModel);
+  updateModeUI();
+  closeSettings();
+}
+function clearConversation() {
+  chatHistory = [];
+  localStorage.removeItem('health_chat_history');
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = '';
+  const welcome = document.createElement('div');
+  welcome.className = 'chat-welcome';
+  welcome.id = 'chatWelcome';
+  welcome.innerHTML = '<div class="welcome-icon">💙</div><p>Chat đã xoá. Hỏi tôi bất cứ điều gì về sức khỏe Bố Xuyên.</p>';
+  container.appendChild(welcome);
+  document.getElementById('chatSuggestions').style.display = 'flex';
+  closeSettings();
+}
+function saveConversation() {
+  try { localStorage.setItem('health_chat_history', JSON.stringify(chatHistory.slice(-20))); } catch(e) {}
+}
+function loadConversation() {
+  try {
+    const saved = localStorage.getItem('health_chat_history');
+    if (!saved) return;
+    const history = JSON.parse(saved);
+    if (!history.length) return;
+    chatHistory = history;
+    const welcome = document.getElementById('chatWelcome');
+    if (welcome) welcome.style.display = 'none';
+    document.getElementById('chatSuggestions').style.display = 'none';
+    history.forEach(m => addMessage(m.role, m.content));
+  } catch(e) {}
+}
+
+document.getElementById('settingsModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSettings();
+});
+document.getElementById('tab-chat').style.display = 'none';
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+(function init() {
+  if (!sessionStorage.getItem('app_password')) {
+    document.getElementById('loginScreen').style.display = 'flex';
+    return;
+  }
+  loadData();
+})();
+</script>
+</body>
+</html>
