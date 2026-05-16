@@ -6,6 +6,7 @@ module.exports = async (req, res) => {
   if (!checkAuth(req)) return res.status(401).json({ error: 'Unauthorized' });
 
   const { database_id } = req.body || {};
+  if (!database_id) return res.status(400).json({ error: 'Missing database_id' });
 
   const notionRes = await fetch(
     `https://api.notion.com/v1/databases/${database_id}/query`,
