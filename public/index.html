@@ -2103,6 +2103,10 @@ let analysisRendered = false;
 let chatHistory = [];
 let isResponding = false;
 let pendingAttachment = null;
+let notionDocDbIds = {};
+try { notionDocDbIds = JSON.parse(localStorage.getItem('health_doc_db_ids') || '{}'); } catch {}
+
+let _costNoteShown = !!localStorage.getItem('health_cost_note_shown');
 let selectedModel = localStorage.getItem('health_model') || 'claude-sonnet-4-6';
 
 // Log form state
@@ -3169,35 +3173,225 @@ function sendPrompt(text) {
   submitChat();
 }
 
+const PROGRESS_STAGES = {
+  reading: 'Đang đọc tài liệu...',
+  extracting: 'Đang trích xuất dữ liệu...',
+  saving: 'Đang lưu vào Notion...'
+};
+
+function showProgressStage(stage) {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-progress-stage';
+  div.textContent = PROGRESS_STAGES[stage] || '...';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function updateProgressStage(el, stage) {
+  if (el) el.textContent = PROGRESS_STAGES[stage] || '...';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function addSaveSummary(badgeText, summaryVi) {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg assistant';
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar'; avatar.textContent = 'AI';
+  const bubble = document.createElement('div'); bubble.className = 'msg-bubble';
+  bubble.innerHTML = `<div class="chat-save-badge">✓ ${escapeHtml(badgeText)}</div>${formatMessage(summaryVi || '')}`;
+  const meta = document.createElement('div'); meta.className = 'msg-meta';
+  meta.textContent = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  const inner = document.createElement('div'); inner.style.maxWidth = '100%';
+  inner.appendChild(bubble); inner.appendChild(meta);
+  div.appendChild(avatar); div.appendChild(inner);
+  container.appendChild(div); container.scrollTop = container.scrollHeight;
+}
+
+function addUserMessageWithAttachment(text, attachmentName) {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div'); div.className = 'chat-msg user';
+  const avatar = document.createElement('div'); avatar.className = 'msg-avatar'; avatar.textContent = 'Bạn';
+  const inner = document.createElement('div');
+  inner.style.cssText = 'display:flex;flex-direction:column;gap:6px;align-items:flex-end';
+  inner.innerHTML = `
+    <div style="background:var(--jade-soft,#D6E6DC);border:1.5px solid var(--jade,#2E7D5B);border-radius:14px 4px 14px 14px;padding:8px 12px;font-size:12px;color:var(--jade-deep,#1F5C42);display:flex;align-items:center;gap:8px">
+      <span style="font-size:18px">📄</span>
+      <span><strong>${escapeHtml(attachmentName)}</strong></span>
+    </div>
+    ${text ? `<div class="msg-bubble">${formatMessage(text)}</div>` : ''}
+    <div class="msg-meta">${new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
+  `;
+  div.appendChild(avatar); div.appendChild(inner);
+  container.appendChild(div); container.scrollTop = container.scrollHeight;
+}
+
+function maybeShowFirstTimeCostNote() {
+  if (_costNoteShown) return;
+  showToast('Tài liệu sẽ được Claude đọc. Mỗi lần tải lên dùng nhiều token hơn câu hỏi văn bản.', 'success');
+  _costNoteShown = true;
+  try { localStorage.setItem('health_cost_note_shown', '1'); } catch {}
+}
+
+const _ensureDbInflight = {};
+async function ensureDocumentDb(type) {
+  if (notionDocDbIds[type]) return notionDocDbIds[type];
+  if (_ensureDbInflight[type]) return _ensureDbInflight[type];
+  _ensureDbInflight[type] = (async () => {
+    const { id } = await apiFetch('/api/document-db-create', { type });
+    notionDocDbIds[type] = id;
+    try { localStorage.setItem('health_doc_db_ids', JSON.stringify(notionDocDbIds)); } catch {}
+    return id;
+  })();
+  try { return await _ensureDbInflight[type]; }
+  finally { delete _ensureDbInflight[type]; }
+}
+
+const TYPE_LABELS_VI = {
+  cgm: 'Đã lưu dữ liệu CGM',
+  labs: 'Đã lưu kết quả xét nghiệm',
+  chemo: 'Đã lưu hóa trị',
+  doctor_notes: 'Đã lưu ghi chú khám bệnh'
+};
+
+function generateNameClient(type, record) {
+  switch (type) {
+    case 'cgm': {
+      const fmt = (iso) => iso ? iso.slice(8,10) + '/' + iso.slice(5,7) : '?';
+      return `CGM ${fmt(record['Period Start'])}–${fmt(record['Period End'])}`;
+    }
+    case 'labs': return `${record['Test Name'] || 'Lab'} — ${record['Date'] || ''}`;
+    case 'chemo': return `${record['Regimen'] || 'Chemo'} Cycle ${record['Cycle Number'] || '?'} — ${record['Date'] || ''}`;
+    case 'doctor_notes': return `${record['Doctor'] || 'Bác sĩ'} — ${record['Date'] || ''}`;
+    default: return 'Untitled';
+  }
+}
+
+async function extractAndSave(input) {
+  const type = input.document_type;
+  const records = Array.isArray(input.records) ? input.records : [];
+  const summary = input.summary_vi || '';
+
+  if (!TYPE_LABELS_VI[type]) return { ok: false, error: `Loại không hợp lệ: ${type}` };
+  if (records.length === 0) return { ok: false, error: 'Không có dữ liệu để lưu.' };
+
+  const enriched = records.map(r => ({ ...r, Name: r.Name || generateNameClient(type, r) }));
+
+  if (type === 'doctor_notes' && enriched.some(r => r['New Medications'])) {
+    const ok = await confirmMedChange(enriched, summary);
+    if (!ok) return { ok: true, badgeText: 'Đã bỏ qua (không lưu)', summary: 'Bạn đã chọn không lưu thay đổi thuốc này.' };
+  }
+  if (type === 'cgm') {
+    const dup = await detectDuplicateCGM(enriched);
+    if (dup === 'skip') return { ok: true, badgeText: 'Đã bỏ qua trùng lặp', summary: 'Đã có dữ liệu CGM trùng khoảng thời gian này.' };
+  }
+
+  try {
+    const dbId = await ensureDocumentDb(type);
+    const { page_ids } = await apiFetch('/api/document-save', { database_id: dbId, type, records: enriched });
+    const badgeText = `${TYPE_LABELS_VI[type]} (${page_ids.length} bản ghi)`;
+    return { ok: true, badgeText, summary, recordIds: page_ids };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
+async function refreshAfterSave() {
+  try { await loadData(); } catch (e) { console.warn('refresh failed', e); }
+}
+
+async function confirmMedChange() { console.warn('confirmMedChange stub'); return true; }
+async function detectDuplicateCGM() { console.warn('detectDuplicateCGM stub'); return 'new'; }
+
 async function submitChat() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
-  if (!text || isResponding) return;
+  const hasAttachment = !!pendingAttachment;
+  if (!text && !hasAttachment) return;
+  if (isResponding) return;
+
   const welcome = document.getElementById('chatWelcome');
   if (welcome) welcome.style.display = 'none';
   document.getElementById('chatSuggestions').style.display = 'none';
+
+  const attachment = pendingAttachment;
   input.value = '';
   autoResizeTextarea(input);
-  addMessage('user', text);
-  chatHistory.push({ role: 'user', content: text });
+
+  if (attachment) {
+    addUserMessageWithAttachment(text, attachment.name);
+    clearAttachment();
+  } else {
+    addMessage('user', text);
+  }
+
+  const userContent = attachment
+    ? buildAttachmentMessageContent(attachment, text)
+    : text;
+  chatHistory.push({ role: 'user', content: userContent });
+
   isResponding = true;
   document.getElementById('sendBtn').disabled = true;
-  const typing = showTyping();
+  document.getElementById('attachBtn').disabled = true;
+
+  let progressEl = null;
   try {
-    let response;
-    if (isLiveMode()) response = await callAnthropicAPI(chatHistory);
-    else { await delay(700 + Math.random() * 600); response = getMockResponse(text); }
-    typing.remove();
-    addMessage('assistant', response);
-    chatHistory.push({ role: 'assistant', content: response });
+    if (attachment) {
+      progressEl = showProgressStage('reading');
+      maybeShowFirstTimeCostNote();
+      const apiResp = await callAnthropicAPI(chatHistory, { mode: 'document', tools: [SAVE_DOCUMENT_TOOL] });
+      updateProgressStage(progressEl, 'extracting');
+
+      const toolUses = (apiResp.content || []).filter(b => b.type === 'tool_use');
+      const textBlocks = (apiResp.content || []).filter(b => b.type === 'text').map(b => b.text);
+
+      if (toolUses.length === 0) {
+        progressEl?.remove();
+        const reply = textBlocks.join('\n\n') || 'Không nhận diện được loại tài liệu.';
+        addMessage('assistant', reply);
+        chatHistory.push({ role: 'assistant', content: reply });
+      } else {
+        updateProgressStage(progressEl, 'saving');
+        const results = [];
+        for (const tu of toolUses) results.push(await extractAndSave(tu.input));
+        progressEl?.remove();
+        for (const r of results) {
+          if (r.ok) addSaveSummary(r.badgeText, r.summary);
+          else addMessage('assistant', `Lỗi lưu: ${r.error}`);
+        }
+        await refreshAfterSave();
+        chatHistory.push({ role: 'assistant', content: results.map(r => r.summary || `Lỗi: ${r.error}`).join('\n') });
+      }
+    } else {
+      const typing = showTyping();
+      const apiResp = await callAnthropicAPI(chatHistory);
+      const response = apiResp.content?.[0]?.text || 'Không có phản hồi.';
+      typing.remove();
+      addMessage('assistant', response);
+      chatHistory.push({ role: 'assistant', content: response });
+    }
     saveConversation();
-  } catch(err) {
-    typing.remove();
-    addMessage('assistant', `Xin lỗi, có lỗi: ${err.message}. Kiểm tra API key trong Cài đặt.`);
+  } catch (err) {
+    progressEl?.remove();
+    addMessage('assistant', `Xin lỗi, có lỗi: ${err.message}.`);
   }
   isResponding = false;
   document.getElementById('sendBtn').disabled = false;
+  document.getElementById('attachBtn').disabled = false;
   input.focus();
+}
+
+function buildAttachmentMessageContent(attachment, text) {
+  const isImage = attachment.mimeType.startsWith('image/');
+  const docBlock = isImage
+    ? { type: 'image', source: { type: 'base64', media_type: attachment.mimeType, data: attachment.base64 } }
+    : { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: attachment.base64 } };
+  return [docBlock, { type: 'text', text: text || 'Phân tích và lưu tài liệu này.' }];
 }
 
 function addMessage(role, content) {
@@ -3294,6 +3488,44 @@ function clearAttachment() {
   renderAttachmentPreview();
 }
 
+const SAVE_DOCUMENT_TOOL = {
+  name: 'save_document',
+  description: 'Extract structured health data from an attached medical document (CGM report, lab results, chemo session, or doctor visit notes) and save it to the patient profile. If you cannot identify the document type, do NOT call the tool — instead reply in Vietnamese explaining what you saw.',
+  input_schema: {
+    type: 'object',
+    required: ['document_type', 'summary_vi', 'records'],
+    properties: {
+      document_type: { type: 'string', enum: ['cgm', 'labs', 'chemo', 'doctor_notes'] },
+      summary_vi: { type: 'string', description: 'Short (1-3 sentence) Vietnamese summary shown to the caregiver.' },
+      records: {
+        type: 'array',
+        minItems: 1,
+        description: 'Records to insert. CGM = one record per period. Labs = one record per individual test. Chemo = one per session. Doctor notes = one per visit. NEVER invent values — omit fields you cannot read.',
+        items: { type: 'object', additionalProperties: true }
+      }
+    }
+  }
+};
+
+function documentSystemPromptExtension() {
+  return `
+
+---
+**TÀI LIỆU ĐÍNH KÈM:** Người dùng vừa đính kèm một tài liệu y khoa. Hãy nhận diện loại tài liệu (cgm/đường huyết, labs/xét nghiệm, chemo/hóa trị, hoặc doctor_notes/ghi chú khám bệnh) và gọi tool \`save_document\` với dữ liệu đã trích xuất.
+
+Yêu cầu nghiêm ngặt:
+- KHÔNG bịa giá trị. Nếu một trường không có trong tài liệu, bỏ qua nó.
+- Trường \`summary_vi\` phải bằng tiếng Việt, ngắn gọn, nêu rõ con số quan trọng.
+- Nếu tài liệu chứa nhiều loại (ví dụ ghi chú khám + xét nghiệm), gọi tool nhiều lần với \`document_type\` khác nhau.
+- Nếu không xác định được loại tài liệu, KHÔNG gọi tool — thay vào đó trả lời bằng tiếng Việt giải thích những gì bạn thấy và hỏi cách xử lý.
+
+Tên trường cho từng loại:
+- cgm: Period Start, Period End, Device, Avg Glucose (mmol/L), Time In Range (%), Time Above Range (%), Time Below Range (%), Notes
+- labs: Date, Test Name, Value, Unit, Reference Range, Status (Normal|High|Low|Critical), Lab / Facility
+- chemo: Date, Cycle Number, Regimen, Dose Reductions, Pre-meds Given, Side Effects Noted, Next Session Date
+- doctor_notes: Date, Doctor, Facility, Key Findings, Plan Changes, New Medications, Follow-up Date`;
+}
+
 function handleChatKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitChat(); }
 }
@@ -3302,14 +3534,19 @@ function autoResizeTextarea(el) {
   el.style.height = Math.min(el.scrollHeight, 120) + 'px';
 }
 
-async function callAnthropicAPI(messages) {
-  const data = await apiFetch('/api/chat', {
-    model: selectedModel, max_tokens: 1024, system: buildSystemPrompt(), messages
-  });
-  return data.content?.[0]?.text || 'Không có phản hồi.';
+async function callAnthropicAPI(messages, options = {}) {
+  const body = {
+    model: selectedModel,
+    max_tokens: options.max_tokens || 2048,
+    system: buildSystemPrompt(options.mode),
+    messages
+  };
+  if (options.tools) body.tools = options.tools;
+  const data = await apiFetch('/api/chat', body);
+  return data;
 }
 
-function buildSystemPrompt() {
+function buildSystemPrompt(mode) {
   const n = entries.length;
   const recent = entries.slice(0, 10);
   let prompt = `Bạn là trợ lý sức khỏe AI, hỗ trợ gia đình chăm sóc Nguyễn Sơn Xuyên ("Bố Xuyên"), 66 tuổi, người Việt Nam, đang điều trị ung thư tụy giai đoạn II sau khi cắt toàn bộ tụy. Ông bị tiểu đường type 3c (do thiếu tụy) và đang hóa trị FOLFIRINOX (2 tuần/lần, 12 đợt).
@@ -3333,6 +3570,7 @@ Dữ liệu: ${n} ngày đã ghi.`;
     });
   }
   prompt += '\n\nHãy ấm áp, thực tế và cụ thể. Luôn lưu ý khi cần thảo luận với bác sĩ Hạnh, không đưa ra chỉ định y tế trực tiếp.';
+  if (mode === 'document') prompt += documentSystemPromptExtension();
   return prompt;
 }
 
