@@ -21,7 +21,9 @@ module.exports = async (req, res) => {
       },
       body: JSON.stringify({
         page_size: 25,
-        sorts: [{ property: 'Date', direction: 'descending' }],
+        ...(database_id === 'ea677d7a-a61f-4455-bf71-82e7beec4095'
+          ? { sorts: [{ property: 'Date', direction: 'descending' }] }
+          : {}),
       }),
     }
   );
