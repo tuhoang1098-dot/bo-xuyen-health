@@ -1,6 +1,6 @@
 const ALLOWED_DB_IDS = new Set([
-  '13c0deff-9077-4fa9-bb05-3728f8f4c871',
-  '63ff99c4-fa38-4263-a5e0-a7a0051af68d',
+  'ea677d7a-a61f-4455-bf71-82e7beec4095',
+  '1058b7ac-5ea3-446c-93db-59d171b898d5',
 ]);
 
 function checkAuth(req) {
